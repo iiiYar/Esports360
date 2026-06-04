@@ -1,0 +1,25 @@
+.DS_Store
+
+# Xcode generated data
+BuildData/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Build logs and temporary exports
+build.log
+*.ipa
+*.xcarchive
+
+# Python generated files
+__pycache__/
+.pytest_cache/
+.venv/
+
+# Node generated files
+node_modules/
+npm-debug.log*
+
+# Docker and local runtime data
+*.pid
+*.log

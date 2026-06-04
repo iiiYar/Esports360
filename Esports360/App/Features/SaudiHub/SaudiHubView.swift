@@ -1,0 +1,307 @@
+import SwiftUI
+
+struct SaudiHubView: View {
+    @StateObject private var viewModel = SaudiHubViewModel()
+    @State private var animateGradient = false
+    
+    // Custom Royal Saudi Colors
+    private let saudiForest = Color(hex: 0x022b18)
+    private let saudiNeon = Color(hex: 0x00a15c)
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    hero
+
+                    SectionHeader(title: "saudiHub.teams", systemImage: "flag.and.stars.fill")
+
+                    ForEach(viewModel.teamProfiles) { profile in
+                        NavigationLink {
+                            UnifiedTeamDetailView(teamId: profile.id)
+                        } label: {
+                            SaudiTeamCard(profile: profile, saudiNeon: saudiNeon)
+                        }
+                        .buttonStyle(PressScaleButtonStyle())
+                    }
+
+                    NavigationLink {
+                        TournamentBracketView()
+                    } label: {
+                        TournamentCTA(saudiNeon: saudiNeon)
+                    }
+                    .buttonStyle(PressScaleButtonStyle())
+                }
+                .padding(18)
+            }
+            .background(E360Color.background.ignoresSafeArea())
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .task {
+                await viewModel.load()
+            }
+            .refreshable {
+                await viewModel.load()
+            }
+        }
+    }
+
+    private var hero: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("tab.saudiHub")
+                    .font(E360Font.display(30, weight: .black))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 26))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [E360Color.gold, .white],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: E360Color.gold.opacity(0.45), radius: 8)
+            }
+
+            Text("saudiHub.ewc")
+                .font(E360Font.body(14, weight: .bold))
+                .foregroundStyle(E360Color.gold)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.1), in: Capsule())
+            
+            Text("المقر الرسمي لمتابعة تغطية مواجهات أندية النخبة العالمية والصقور السعودية في كأس العالم للرياضات الإلكترونية")
+                .font(E360Font.body(13, weight: .medium))
+                .foregroundStyle(E360Color.textSecondary)
+                .lineLimit(2)
+                .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(22)
+        .background {
+            ZStack {
+                LinearGradient(
+                    colors: [
+                        saudiForest,
+                        saudiNeon.opacity(animateGradient ? 0.48 : 0.28),
+                        E360Color.surface
+                    ],
+                    startPoint: animateGradient ? .topLeading : .bottomLeading,
+                    endPoint: animateGradient ? .bottomTrailing : .topTrailing
+                )
+                
+                // Background crown watermark
+                Image(systemName: "flag.fill")
+                    .font(.system(size: 140))
+                    .foregroundStyle(saudiNeon.opacity(0.06))
+                    .offset(x: 100, y: 30)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [saudiNeon.opacity(0.55), E360Color.gold.opacity(0.42)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: saudiNeon.opacity(0.18), radius: 15)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 6.0).repeatForever(autoreverses: true)) {
+                animateGradient.toggle()
+            }
+        }
+    }
+}
+
+private struct SaudiTeamCard: View {
+    let profile: TeamProfile
+    let saudiNeon: Color
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack(alignment: .topTrailing) {
+                TeamAvatar(team: profile.team, size: 72)
+                    .background(E360Color.gold.opacity(0.12), in: Circle())
+                    .overlay(
+                        Circle().stroke(
+                            LinearGradient(
+                                colors: [E360Color.gold, saudiNeon],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                    )
+
+                Text("🇸🇦")
+                    .font(.system(size: 18))
+                    .shadow(radius: 3)
+                    .offset(x: 6, y: -4)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(profile.team.name)
+                    .font(E360Font.display(18, weight: .black))
+                    .foregroundStyle(E360Color.textPrimary)
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    ESImageView(url: profile.displayGameImageURL, fallbackAsset: E360ImageAsset.gamePlaceholder)
+                        .frame(width: 18, height: 18)
+                    Text(profile.game.shortName)
+                        .font(E360Font.mono(11, weight: .bold))
+                        .foregroundStyle(profile.game.themeColor)
+                    
+                    Text("•")
+                        .foregroundStyle(E360Color.textTertiary)
+                    
+                    Text(String(format: String(localized: "team.rosterCount"), ArabicNumberFormatter.localized(profile.roster.count)))
+                        .font(E360Font.body(11, weight: .semibold))
+                }
+                .font(E360Font.body(12, weight: .semibold))
+                .foregroundStyle(E360Color.textSecondary)
+
+                // Gamified Win Rate Slider
+                let winRate = profile.winRateHistory.last?.value ?? 68.0
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("معدل الفوز")
+                            .font(E360Font.body(10, weight: .bold))
+                            .foregroundStyle(E360Color.textSecondary)
+                        Spacer()
+                        Text("\(ArabicNumberFormatter.localized(Int(winRate)))%")
+                            .font(E360Font.mono(11, weight: .black))
+                            .foregroundStyle(E360Color.gold)
+                    }
+                    
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(E360Color.elevatedSurface)
+                            
+                            LinearGradient(
+                                colors: [saudiNeon, E360Color.accent],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .frame(width: proxy.size.width * CGFloat(winRate / 100))
+                            .clipShape(Capsule())
+                            
+                            // Sliding Trophy Icon
+                            Image(systemName: "trophy.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(E360Color.gold)
+                                .frame(width: 14, height: 14)
+                                .background(E360Color.surface, in: Circle())
+                                .overlay(Circle().stroke(E360Color.gold, lineWidth: 1))
+                                .offset(x: max(0, proxy.size.width * CGFloat(winRate / 100) - 7))
+                        }
+                    }
+                    .frame(height: 6)
+                }
+                .padding(.top, 4)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.forward")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(saudiNeon.opacity(0.8))
+        }
+        .padding(18)
+        .e360Card(highlighted: true, cornerRadius: 20, borderColor: saudiNeon.opacity(0.35))
+    }
+}
+
+private struct SectionHeader: View {
+    let title: LocalizedStringKey
+    let systemImage: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(E360Color.gold)
+
+            Text(title)
+                .font(E360Font.display(19, weight: .bold))
+                .foregroundStyle(E360Color.textPrimary)
+        }
+        .padding(.horizontal, 4)
+    }
+}
+
+private struct TournamentCTA: View {
+    let saudiNeon: Color
+
+    var body: some View {
+        HStack {
+            Label("saudiHub.ewc", systemImage: "trophy.fill")
+                .font(E360Font.body(15, weight: .black))
+                .foregroundStyle(E360Color.gold)
+            
+            Spacer()
+            
+            Text("استعراض الفروع والترتيب")
+                .font(E360Font.body(12, weight: .bold))
+                .foregroundStyle(.white)
+            
+            Image(systemName: "arrow.left.circle.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(E360Color.gold)
+        }
+        .padding(18)
+        .background {
+            ZStack {
+                E360Color.surface
+                LinearGradient(
+                    colors: [saudiNeon.opacity(0.12), E360Color.gold.opacity(0.06)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [E360Color.gold.opacity(0.42), saudiNeon.opacity(0.24)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+    }
+}
+
+@MainActor
+private final class SaudiHubViewModel: ObservableObject {
+    @Published private(set) var teamProfiles = [
+        MockEsportsData.teamFalconsProfile,
+        MockEsportsData.teamProfile(id: MockEsportsData.twistedMinds.id),
+        MockEsportsData.teamProfile(id: MockEsportsData.nasr.id)
+    ].compactMap(\.self)
+
+    private let repository = BackendTeamRepository()
+
+    func load() async {
+        do {
+            let remoteProfiles = try await repository.featuredTeams()
+            if remoteProfiles.isEmpty == false {
+                teamProfiles = remoteProfiles
+            }
+        } catch {
+            // The Saudi hub remains usable with local seed data if the backend is offline.
+        }
+    }
+}

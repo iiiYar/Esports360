@@ -1,0 +1,696 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "calendar.gregorian" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ميلادي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Gregorian" } }
+      }
+    },
+    "calendar.hijri" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "هجري" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Hijri" } }
+      }
+    },
+    "action.share" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مشاركة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Share" } }
+      }
+    },
+    "bracket.draws" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ت" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "D" } }
+      }
+    },
+    "bracket.groupStage" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ترتيب دور المجموعات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Group Stage Standings" } }
+      }
+    },
+    "bracket.knockout" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الأدوار الإقصائية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Knockout Bracket" } }
+      }
+    },
+    "bracket.losses" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خ" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "L" } }
+      }
+    },
+    "bracket.pinchHint" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "كبّر القوس أو صغّره بإيماءة القرص." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pinch to zoom the bracket." } }
+      }
+    },
+    "bracket.points" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ن" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pts" } }
+      }
+    },
+    "bracket.resetZoom" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إعادة التكبير" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset zoom" } }
+      }
+    },
+    "bracket.team" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الفريق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Team" } }
+      }
+    },
+    "bracket.wins" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ف" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "W" } }
+      }
+    },
+    "deepLink.notFound" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الرابط غير متوفر" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Link unavailable" } }
+      }
+    },
+    "deepLink.notFoundSubtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم نجد هذا العنصر في بيانات التطبيق الحالية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "This item was not found in the current app data." } }
+      }
+    },
+    "discover.activeTournaments" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "بطولات نشطة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Active tournaments" } }
+      }
+    },
+    "feature.fantasy.subtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اختيار ٥ لاعبين أسبوعيًا، نقاط مباشرة، ولوحات صدارة للمنطقة والأصدقاء." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Draft 5 players weekly with live scoring and MENA/friends leaderboards." } }
+      }
+    },
+    "feature.fantasy.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "فانتازي إي سبورتس" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fantasy Esports" } }
+      }
+    },
+    "feature.player.subtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إحصاءات المسيرة، اتجاهات K/D، وأشهر الأبطال والوكلاء." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Career stats, K/D trends, and champion or agent pools." } }
+      }
+    },
+    "feature.player.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ملف اللاعب" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Player Profile" } }
+      }
+    },
+    "feature.team.subtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "القائمة، النتائج الأخيرة، مخطط الأداء، ونسبة الفوز." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Roster, recent results, form chart, and win-rate stats." } }
+      }
+    },
+    "feature.team.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ملف الفريق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Team Profile" } }
+      }
+    },
+    "feature.tournament.subtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قوس تفاعلي قابل للتكبير لبطولات الرياض وMENA." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pinch-to-zoom interactive brackets for Riyadh and MENA events." } }
+      }
+    },
+    "feature.tournament.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قوس البطولة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tournament Bracket" } }
+      }
+    },
+    "home.bigGame" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "أقوى مباريات اليوم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today's Big Game" } }
+      }
+    },
+    "home.emptyLive" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد مباريات مباشرة الآن" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No live matches right now" } }
+      }
+    },
+    "home.emptyResults" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم تنته أي مباريات بعد" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No completed matches yet" } }
+      }
+    },
+    "home.emptyUpcoming" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد مباريات قادمة اليوم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No upcoming matches today" } }
+      }
+    },
+    "home.liveNow" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "LIVE NOW" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "LIVE NOW" } }
+      }
+    },
+    "home.lastUpdated" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "آخر تحديث %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updated %@" } }
+      }
+    },
+    "home.refreshFailed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر تحديث بيانات السيرفر. أبقينا آخر بيانات حقيقية بدون عرض مباريات تجريبية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not refresh server data. Keeping the last real data without showing demo matches." } }
+      }
+    },
+    "home.results" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "النتائج" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Results" } }
+      }
+    },
+    "home.tagline" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "عالمك التنافسي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your game. Your world." } }
+      }
+    },
+    "home.upNext" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التالي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Up Next" } }
+      }
+    },
+    "language.arabic" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "العربية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Arabic" } }
+      }
+    },
+    "language.english" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإنجليزية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "English" } }
+      }
+    },
+    "match.cancelled" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "ملغاة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancelled" } }
+      }
+    },
+    "match.finished" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "انتهت" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Final" } }
+      }
+    },
+    "match.live" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "LIVE" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "LIVE" } }
+      }
+    },
+    "match.liveDetailComing" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "سيعرض هنا تقدم الخريطة والجولات وتشكيلات الفرق عند توفر بث البيانات الحي." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Map progress, round flow, and team comps will appear here as live data arrives." } }
+      }
+    },
+    "match.loadFailed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر تحميل تفاصيل المباراة من السيرفر." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not load match details from the server." } }
+      }
+    },
+    "match.notFound" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المباراة غير متاحة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Match unavailable" } }
+      }
+    },
+    "match.notFoundSubtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم نستطع الوصول إلى هذه المباراة من السيرفر الآن." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "We could not reach this match from the server right now." } }
+      }
+    },
+    "match.refreshFailed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر تحديث المباراة. أبقينا آخر تفاصيل متاحة." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not refresh the match. Keeping the last available details." } }
+      }
+    },
+    "match.refreshing" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جار تحديث تفاصيل المباراة..." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Refreshing match details..." } }
+      }
+    },
+    "match.bestOf" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "أفضل من %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Best of %@" } }
+      }
+    },
+    "match.durationMinutes" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "%@ دقيقة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ min" } }
+      }
+    },
+    "match.clock" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الوقت" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Clock" } }
+      }
+    },
+    "match.cs2RoundScoreUnavailable" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نتيجة الراوندات غير متوفرة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Round score unavailable" } }
+      }
+    },
+    "match.firstHalfShort" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "H1 %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "H1 %@" } }
+      }
+    },
+    "match.map" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الخريطة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Map" } }
+      }
+    },
+    "match.mapNumber" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خريطة %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Map %@" } }
+      }
+    },
+    "match.mapProgress" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تقدم المباراة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Match Progress" } }
+      }
+    },
+    "match.noStreams" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا يوجد بث مؤكد" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No confirmed stream" } }
+      }
+    },
+    "match.noStreamsHint" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "سنضيف رابط البث تلقائيًا عند ظهوره من المزود أو القناة الرسمية." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "We will add the stream automatically when the provider or official channel exposes it." } }
+      }
+    },
+    "match.noCompsYet" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التشكيلة غير متوفرة بعد" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Composition is not available yet" } }
+      }
+    },
+    "match.official" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "رسمي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Official" } }
+      }
+    },
+    "match.officialStream" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "البث الرسمي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Official stream" } }
+      }
+    },
+    "match.round" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الجولة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Round" } }
+      }
+    },
+    "match.roundNumber" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جولة %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Round %@" } }
+      }
+    },
+    "match.roundProgress" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تقدم الجولات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Round Progress" } }
+      }
+    },
+    "match.secondHalfShort" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "H2 %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "H2 %@" } }
+      }
+    },
+    "match.overtimeShort" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "OT %@" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "OT %@" } }
+      }
+    },
+    "match.scheduled" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قادمة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scheduled" } }
+      }
+    },
+    "match.teamComps" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تشكيلة الفريقين" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Team Compositions" } }
+      }
+    },
+    "match.watchLive" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مشاهدة البث" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Watch live" } }
+      }
+    },
+    "match.waitingForLiveData" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "بانتظار بيانات مباشرة من مزود النتائج." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting for live data from the score provider." } }
+      }
+    },
+    "navigation.close" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إغلاق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } }
+      }
+    },
+    "player.careerStats" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إحصاءات المسيرة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Career Stats" } }
+      }
+    },
+    "player.kd" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "K/D" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "K/D" } }
+      }
+    },
+    "player.kdTrend" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اتجاه K/D" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "K/D Trend" } }
+      }
+    },
+    "player.matches" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مباريات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Matches" } }
+      }
+    },
+    "player.pool" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مجموعة الوكلاء/الأبطال" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Agent/Champion Pool" } }
+      }
+    },
+    "player.winRate" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نسبة الفوز" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Win Rate" } }
+      }
+    },
+    "live.connected" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تحديثات مباشرة متصلة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live updates connected" } }
+      }
+    },
+    "live.connecting" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "جاري الاتصال بالتحديثات المباشرة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connecting live updates" } }
+      }
+    },
+    "live.disabled" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد مباريات مباشرة حالياً" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No live matches right now" } }
+      }
+    },
+    "live.failed" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر الاتصال بالتحديثات المباشرة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live updates connection failed" } }
+      }
+    },
+    "live.unavailable" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "النتائج محدثة، والتحديث اللحظي غير متاح لهذه الخطة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scores are updated; live streaming is not available on this plan" } }
+      }
+    },
+    "notification.action.editLineup" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعديل التشكيلة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit Lineup" } }
+      }
+    },
+    "notification.action.muteTeam" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "كتم الفريق" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Mute Team" } }
+      }
+    },
+    "notification.action.openMatch" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "فتح المباراة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Match" } }
+      }
+    },
+    "notification.matchStart.body" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "🎮 %@ ضد %@ تبدأ خلال ١٥ دقيقة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "🎮 %@ vs %@ starts in 15 minutes" } }
+      }
+    },
+    "notification.matchStart.title" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "موعد المباراة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Match Reminder" } }
+      }
+    },
+    "notification.permissionDenied" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم يتم منح صلاحية التنبيهات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notification permission was not granted" } }
+      }
+    },
+    "notification.remindersScheduled" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تمت جدولة %@ تنبيهات مباريات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Scheduled %@ match reminders" } }
+      }
+    },
+    "saudiHub.ewc" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "كأس العالم للرياضات الإلكترونية - الرياض" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Esports World Cup Riyadh" } }
+      }
+    },
+    "saudiHub.teamAlerts" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنبيهات أندية النخبة بالعربية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Elite team alerts in Arabic" } }
+      }
+    },
+    "saudiHub.teams" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "أندية النخبة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Elite Teams" } }
+      }
+    },
+    "saudiHub.tournaments" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "البطولات العالمية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Global Tournaments" } }
+      }
+    },
+    "settings.api" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "خادم Esports360" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Esports360 Backend" } }
+      }
+    },
+    "settings.apiFootnote" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التطبيق يقرأ النتائج والصور من الباك اند، والمفاتيح تبقى على السيرفر." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The app reads scores and media from the backend; provider keys stay on the server." } }
+      }
+    },
+    "settings.backendURL" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "رابط الباك اند" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Backend URL" } }
+      }
+    },
+    "settings.calendar" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التقويم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Calendar" } }
+      }
+    },
+    "settings.language" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اللغة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } }
+      }
+    },
+    "settings.pandaScoreToken" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "رمز PandaScore" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "PandaScore token" } }
+      }
+    },
+    "settings.notifications" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "التنبيهات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notifications" } }
+      }
+    },
+    "settings.matchReminders" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنبيهات بداية المباراة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Match start reminders" } }
+      }
+    },
+    "settings.matchRemindersFootnote" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "يرسل التطبيق تنبيهًا محليًا قبل بداية المباراة بـ ١٥ دقيقة دون backend." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The app schedules a local reminder 15 minutes before match start without a backend." } }
+      }
+    },
+    "team.form" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مؤشر الأداء" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Form" } }
+      }
+    },
+    "team.lastFive" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "آخر ٥ مباريات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Last 5 matches" } }
+      }
+    },
+    "team.recentResults" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "النتائج الأخيرة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent Results" } }
+      }
+    },
+    "team.emptyResults" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "سنضيف النتائج الأخيرة بعد مزامنة سجل المباريات." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Recent results will appear after match history sync." } }
+      }
+    },
+    "team.emptyRoster" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد قائمة لاعبين مؤكدة بعد." } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No confirmed roster yet." } }
+      }
+    },
+    "team.player" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لاعب" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Player" } }
+      }
+    },
+    "team.roster" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "قائمة اللاعبين" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Roster" } }
+      }
+    },
+    "team.rosterCount" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "%@ لاعب" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@ players" } }
+      }
+    },
+    "team.winRate" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "نسبة الفوز" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Win Rate" } }
+      }
+    },
+    "tab.discover" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "اكتشف" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Discover" } }
+      }
+    },
+    "tab.fantasy" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "فانتازي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fantasy" } }
+      }
+    },
+    "tab.home" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الرئيسية" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Home" } }
+      }
+    },
+    "tab.saudiHub" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "البطولات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tournaments" } }
+      }
+    },
+    "tab.settings" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الإعدادات" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }
+      }
+    },
+    "ticker.ewc" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الرياض تستضيف أقوى مواجهات الأسبوع" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Riyadh hosts the week's biggest matches" } }
+      }
+    },
+    "ticker.fantasy" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تحديث تشكيلتك الفانتازي قبل بداية الجولة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update your fantasy lineup before the round starts" } }
+      }
+    },
+    "ticker.saudiTeams" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "تنبيهات أندية النخبة والـ EWC جاهزة للعمل" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Elite & EWC team alerts are ready for action" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "esports360-cs2-gc-node-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CS2 Steam Game Coordinator live collector for Esports360",
+  "dependencies": {
+    "globaloffensive": "^3.3.0",
+    "pg": "^8.13.1",
+    "steam-user": "^5.3.0"
+  }
+}
