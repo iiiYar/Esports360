@@ -1,113 +1,85 @@
 import Foundation
 
+// MARK: - Protocol
 protocol LiveScoreStreaming {
     func stream(matchID: String, token: String) async throws -> AsyncThrowingStream<LiveScoreEvent, Error>
     func disconnect(matchID: String) async
     func disconnectAll() async
 }
 
+// MARK: - LiveScoreEvent
 struct LiveScoreEvent: Decodable, Equatable {
-    let matchID: String
-    let teamID: String?
-    let score: Int?
-    let rawType: String?
-    let mapNumber: Int?
+    let matchID:     String
+    let teamID:      String?
+    let score:       Int?
+    let rawType:     String?
+    let mapNumber:   Int?
     let roundNumber: Int?
-    let clock: String?
-    let phase: String?
+    let clock:       String?
+    let phase:       String?
 
     enum CodingKeys: String, CodingKey {
-        case matchID = "match_id"
-        case teamID = "team_id"
-        case score
-        case rawType = "type"
-        case mapNumber = "map_number"
-        case roundNumber = "round_number"
-        case clock
-        case phase
+        case matchID = "match_id", teamID = "team_id", score
+        case rawType = "type", mapNumber = "map_number"
+        case roundNumber = "round_number", clock, phase
     }
 
-    init(
-        matchID: String,
-        teamID: String?,
-        score: Int?,
-        rawType: String?,
-        mapNumber: Int?,
-        roundNumber: Int?,
-        clock: String?,
-        phase: String?
-    ) {
-        self.matchID = matchID
-        self.teamID = teamID
-        self.score = score
-        self.rawType = rawType
-        self.mapNumber = mapNumber
-        self.roundNumber = roundNumber
-        self.clock = clock
-        self.phase = phase
+    init(matchID: String, teamID: String?, score: Int?, rawType: String?,
+         mapNumber: Int?, roundNumber: Int?, clock: String?, phase: String?) {
+        self.matchID = matchID; self.teamID = teamID; self.score = score
+        self.rawType = rawType; self.mapNumber = mapNumber
+        self.roundNumber = roundNumber; self.clock = clock; self.phase = phase
     }
 
     init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        matchID = try container.decodeLossyString(forKey: .matchID)
-        teamID = try container.decodeLossyStringIfPresent(forKey: .teamID)
-        score = try container.decodeIfPresent(Int.self, forKey: .score)
-        rawType = try container.decodeIfPresent(String.self, forKey: .rawType)
-        mapNumber = try container.decodeIfPresent(Int.self, forKey: .mapNumber)
-        roundNumber = try container.decodeIfPresent(Int.self, forKey: .roundNumber)
-        clock = try container.decodeIfPresent(String.self, forKey: .clock)
-        phase = try container.decodeIfPresent(String.self, forKey: .phase)
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        matchID     = try c.decodeLossyString(forKey: .matchID)
+        teamID      = try c.decodeLossyStringIfPresent(forKey: .teamID)
+        score       = try c.decodeIfPresent(Int.self,    forKey: .score)
+        rawType     = try c.decodeIfPresent(String.self, forKey: .rawType)
+        mapNumber   = try c.decodeIfPresent(Int.self,    forKey: .mapNumber)
+        roundNumber = try c.decodeIfPresent(Int.self,    forKey: .roundNumber)
+        clock       = try c.decodeIfPresent(String.self, forKey: .clock)
+        phase       = try c.decodeIfPresent(String.self, forKey: .phase)
     }
 }
 
 private extension KeyedDecodingContainer {
     func decodeLossyString(forKey key: Key) throws -> String {
-        if let value = try? decode(String.self, forKey: key) {
-            return value
-        }
-        if let value = try? decode(Int.self, forKey: key) {
-            return String(value)
-        }
-        throw DecodingError.typeMismatch(
-            String.self,
-            DecodingError.Context(codingPath: codingPath + [key], debugDescription: "Expected string or integer.")
-        )
+        if let v = try? decode(String.self, forKey: key) { return v }
+        if let v = try? decode(Int.self,    forKey: key) { return String(v) }
+        throw DecodingError.typeMismatch(String.self, .init(codingPath: codingPath + [key], debugDescription: "Expected String or Int"))
     }
-
     func decodeLossyStringIfPresent(forKey key: Key) throws -> String? {
-        if try decodeNil(forKey: key) {
-            return nil
-        }
-        return try decodeLossyString(forKey: key)
+        try decodeNil(forKey: key) ? nil : try decodeLossyString(forKey: key)
     }
 }
 
+// MARK: - LiveScoreWebSocketManager
+/// Routes through the Esports360 backend WebSocket proxy: /v1/ws/matches/{id}
+/// The backend authenticates the JWT then forwards the upstream PandaScore WSS stream.
 actor LiveScoreWebSocketManager: LiveScoreStreaming {
-    private let configuration: PandaScoreConfiguration
     private let session: URLSession
     private var tasks: [String: URLSessionWebSocketTask] = [:]
 
-    init(
-        configuration: PandaScoreConfiguration = .production,
-        session: URLSession = .shared
-    ) {
-        self.configuration = configuration
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
     func stream(matchID: String, token: String) async throws -> AsyncThrowingStream<LiveScoreEvent, Error> {
-        var components = URLComponents(
-            url: configuration.liveBaseURL.appending(path: "matches/\(matchID)"),
+        let config = Esports360APIConfiguration.fromUserSettings()
+        guard var components = URLComponents(
+            url: config.baseURL.appending(path: "v1/ws/matches/\(matchID)"),
             resolvingAgainstBaseURL: false
-        )
-        components?.queryItems = [URLQueryItem(name: "token", value: token)]
+        ) else { throw APIError.invalidURL }
 
-        guard let url = components?.url else {
-            throw APIError.invalidURL
-        }
+        // http → ws  |  https → wss
+        components.scheme     = config.baseURL.scheme == "https" ? "wss" : "ws"
+        components.queryItems = [URLQueryItem(name: "token", value: token)]
+        guard let url = components.url else { throw APIError.invalidURL }
 
-        let task = session.webSocketTask(with: url)
         tasks[matchID]?.cancel(with: .goingAway, reason: nil)
+        let task = session.webSocketTask(with: url)
         tasks[matchID] = task
         task.resume()
 
@@ -118,24 +90,17 @@ actor LiveScoreWebSocketManager: LiveScoreStreaming {
                 task.receive { result in
                     switch result {
                     case .success(let message):
-                        do {
-                            let data: Data
-                            switch message {
-                            case .data(let payload):
-                                data = payload
-                            case .string(let text):
-                                data = Data(text.utf8)
-                            @unknown default:
-                                throw APIError.invalidResponse
-                            }
-
-                            if let event = try? decoder.decode(LiveScoreEvent.self, from: data) {
-                                continuation.yield(event)
-                            }
-                            receiveNext()
-                        } catch {
-                            continuation.finish(throwing: error)
+                        let data: Data
+                        switch message {
+                        case .data(let d):   data = d
+                        case .string(let s): data = Data(s.utf8)
+                        @unknown default:    receiveNext(); return
                         }
+                        // Skip keepalive ping frames injected by the proxy
+                        if let event = try? decoder.decode(LiveScoreEvent.self, from: data) {
+                            continuation.yield(event)
+                        }
+                        receiveNext()
                     case .failure(let error):
                         continuation.finish(throwing: error)
                     }
@@ -143,9 +108,7 @@ actor LiveScoreWebSocketManager: LiveScoreStreaming {
             }
 
             receiveNext()
-            continuation.onTermination = { _ in
-                task.cancel(with: .goingAway, reason: nil)
-            }
+            continuation.onTermination = { _ in task.cancel(with: .goingAway, reason: nil) }
         }
     }
 

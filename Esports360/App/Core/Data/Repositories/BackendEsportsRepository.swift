@@ -1,5 +1,6 @@
 import Foundation
 
+// MARK: - Match Repository
 struct BackendMatchRepository: MatchRepository {
     private let apiClient: Esports360APIClient
 
@@ -22,6 +23,7 @@ struct BackendMatchRepository: MatchRepository {
     }
 }
 
+// MARK: - Catalog Repository
 struct BackendCatalogRepository {
     private let apiClient: Esports360APIClient
 
@@ -34,6 +36,7 @@ struct BackendCatalogRepository {
     }
 }
 
+// MARK: - Team Repository
 struct BackendTeamRepository {
     private let apiClient: Esports360APIClient
 
@@ -55,6 +58,7 @@ struct BackendTeamRepository {
     }
 }
 
+// MARK: - Tournament Repository
 struct BackendTournamentRepository {
     private let apiClient: Esports360APIClient
 

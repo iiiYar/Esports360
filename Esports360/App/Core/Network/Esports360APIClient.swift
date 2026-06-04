@@ -5,13 +5,14 @@ actor Esports360APIClient {
     private let httpClient: HTTPClient
 
     init(
-        configuration: Esports360APIConfiguration = .production,
+        configuration: Esports360APIConfiguration = .fromUserSettings(),
         httpClient: HTTPClient = URLSessionHTTPClient()
     ) {
         self.configuration = configuration
-        self.httpClient = httpClient
+        self.httpClient    = httpClient
     }
 
+    // MARK: - Matches
     func todaysMatches(limit: Int = 80, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
         try await list(path: "v1/matches/today", limit: limit, forceRefresh: forceRefresh)
     }
@@ -24,17 +25,19 @@ actor Esports360APIClient {
         return response.data
     }
 
+    // MARK: - Games
     func games(limit: Int = 50) async throws -> [BackendGameDTO] {
         try await list(path: "v1/games", limit: limit)
     }
 
+    // MARK: - Teams
     func featuredTeams(limit: Int = 20) async throws -> [BackendTeamDTO] {
         try await list(path: "v1/teams/featured", limit: limit)
     }
 
     func teams(limit: Int = 50, offset: Int = 0, forceRefresh: Bool = false) async throws -> BackendListResponse<BackendTeamDTO> {
         var queryItems = [
-            URLQueryItem(name: "limit", value: String(min(max(limit, 1), 1000))),
+            URLQueryItem(name: "limit",  value: String(min(max(limit, 1), 1000))),
             URLQueryItem(name: "offset", value: String(max(offset, 0)))
         ]
         if forceRefresh {
@@ -48,6 +51,7 @@ actor Esports360APIClient {
         return response.data
     }
 
+    // MARK: - Tournaments
     func tournaments(limit: Int = 80, forceRefresh: Bool = false) async throws -> [BackendTournamentDTO] {
         try await list(path: "v1/tournaments", limit: limit, forceRefresh: forceRefresh)
     }
@@ -60,6 +64,7 @@ actor Esports360APIClient {
         return response.data
     }
 
+    // MARK: - Discover
     func discoverTrending() async throws -> DiscoverTrendingDTO {
         try await get(path: "v1/discover/trending")
     }
@@ -77,18 +82,18 @@ actor Esports360APIClient {
         return response.data
     }
 
+    // MARK: - Media URL resolver
     nonisolated func resolveMediaURL(_ rawValue: String?) -> URL? {
         BackendURLResolver.resolveBackendURL(rawValue, baseURL: configuration.baseURL)
     }
 
+    // MARK: - Private helpers
+
     private func list<T: Decodable>(path: String, limit: Int, forceRefresh: Bool = false) async throws -> [T] {
-        var queryItems = [
-            URLQueryItem(name: "limit", value: String(min(max(limit, 1), 100)))
-        ]
+        var queryItems = [URLQueryItem(name: "limit", value: String(min(max(limit, 1), 100)))]
         if forceRefresh {
             queryItems.append(URLQueryItem(name: "_", value: String(Int(Date().timeIntervalSince1970 * 1000))))
         }
-
         let response: BackendListResponse<T> = try await get(path: path, queryItems: queryItems, forceRefresh: forceRefresh)
         return response.data
     }
@@ -98,18 +103,27 @@ actor Esports360APIClient {
         queryItems: [URLQueryItem] = [],
         forceRefresh: Bool = false
     ) async throws -> T {
-        guard var components = URLComponents(url: configuration.baseURL.appending(path: path), resolvingAgainstBaseURL: false) else {
-            throw APIError.invalidURL
-        }
+        guard var components = URLComponents(
+            url: configuration.baseURL.appending(path: path),
+            resolvingAgainstBaseURL: false
+        ) else { throw APIError.invalidURL }
+
         components.queryItems = queryItems.isEmpty ? nil : queryItems
         guard let url = components.url else { throw APIError.invalidURL }
 
         var request = URLRequest(url: url)
+
         if forceRefresh {
             request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
         }
+
+        // ── Auth ────────────────────────────────────────────────────────────
+        if let token = KeychainManager.shared.getToken() {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         return try await httpClient.send(request, decoder: .pandaScore)
     }
