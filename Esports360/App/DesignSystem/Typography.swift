@@ -1,74 +1,58 @@
 import SwiftUI
 
+// MARK: - E360 Typography — iOS 26 Dynamic Type aware
+// Uses SF Pro Display for headings, SF Mono for data/scores,
+// and system rounded for UI labels.
+
 enum E360Font {
-    // Thmanyah Sans – PostScript names (from the official Thmanyah font v1.2)
-    private static let thmanyahRegular = "Thmanyahsans12-Regular"
-    private static let thmanyahMedium  = "Thmanyahsans12-Medium"
-    private static let thmanyahBold    = "Thmanyahsans12-Bold"
-    private static let thmanyahBlack   = "thmanyahsans-Black"
-
-    /// Resolves the correct PostScript font name for a given weight.
-    private static func thmanyah(_ size: CGFloat, weight: Font.Weight) -> Font {
-        let name: String
-        switch weight {
-        case .black, .heavy:
-            name = thmanyahBlack
-        case .bold, .semibold:
-            name = thmanyahBold
-        case .medium:
-            name = thmanyahMedium
-        default:
-            name = thmanyahRegular
-        }
-        return .custom(name, size: size)
-    }
-
-    // MARK: - Public API
-
-    /// Display / headline font — Thmanyah for both Arabic and English.
+    /// Large display text — titles, hero numbers
     static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
-        thmanyah(size, weight: weight)
+        .system(size: size, weight: weight, design: .default)
     }
-
-    /// Extra-large hero text for onboarding or splash screens.
-    static func hero(_ size: CGFloat, weight: Font.Weight = .black) -> Font {
-        thmanyah(size, weight: weight)
+    /// Body copy — descriptions, labels
+    static func body(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight, design: .default)
     }
-
-    /// Body / paragraph text.
-    static func body(_ size: CGFloat = 16, weight: Font.Weight = .regular) -> Font {
-        thmanyah(size, weight: weight)
-    }
-
-    /// Explicit Arabic font — same as body since Thmanyah supports Arabic natively.
-    static func arabic(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        thmanyah(size, weight: weight)
-    }
-
-    /// Numeric / score text — system rounded for tabular figures.
-    static func number(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
-        .system(size: size, weight: weight, design: .rounded)
-    }
-
-    /// Monospace for codes, tags, chips.
-    static func mono(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
+    /// Monospaced — scores, timers, codes
+    static func mono(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         .system(size: size, weight: weight, design: .monospaced)
     }
-}
-
-
-// MARK: - View Modifiers
-
-struct E360ScreenTitle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(E360Font.display(28, weight: .black))
-            .foregroundStyle(E360Color.textPrimary)
+    /// Numbers — stats, counters  
+    static func number(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+        .system(size: size, weight: weight, design: .monospaced)
+            .monospacedDigit()
+    }
+    /// Rounded — pill labels, badges
+    static func rounded(_ size: CGFloat, weight: Font.Weight = .semibold) -> Font {
+        .system(size: size, weight: weight, design: .rounded)
     }
 }
 
+// MARK: - iOS 26 Text Style Tokens
 extension View {
-    func e360ScreenTitle() -> some View {
-        modifier(E360ScreenTitle())
+    /// Hero headline — 34pt black
+    func e360Hero() -> some View {
+        self.font(E360Font.display(34, weight: .black))
+            .foregroundStyle(E360Color.textPrimary)
+    }
+    /// Section title — 22pt bold
+    func e360Title() -> some View {
+        self.font(E360Font.display(22, weight: .bold))
+            .foregroundStyle(E360Color.textPrimary)
+    }
+    /// Card title — 17pt semibold
+    func e360CardTitle() -> some View {
+        self.font(E360Font.body(17, weight: .semibold))
+            .foregroundStyle(E360Color.textPrimary)
+    }
+    /// Caption — 11pt medium
+    func e360Caption() -> some View {
+        self.font(E360Font.body(11, weight: .medium))
+            .foregroundStyle(E360Color.textSecondary)
+    }
+    /// Score / stat number — mono bold
+    func e360Score(_ size: CGFloat = 28) -> some View {
+        self.font(E360Font.number(size, weight: .black))
+            .foregroundStyle(E360Color.textPrimary)
     }
 }
