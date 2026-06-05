@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 
 struct TodaysBigGameView: View {
     let match: Match
@@ -6,6 +7,7 @@ struct TodaysBigGameView: View {
     @State private var animateGradient = false
     @State private var hasReminder = false
     private let notificationService = NotificationService()
+    private static let logger = Logger(subsystem: "com.esports360", category: "TodaysBigGameView")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -20,7 +22,6 @@ struct TodaysBigGameView: View {
                     if match.status.isLive {
                         LiveBadge()
                     } else if match.status == .upcoming {
-                        // Interactive bell reminder
                         Button {
                             HapticManager.shared.triggerSelection()
                             Task {
@@ -34,7 +35,7 @@ struct TodaysBigGameView: View {
                                         hasReminder = true
                                         HapticManager.shared.triggerNotification(type: .success)
                                     } catch {
-                                        print("Error scheduling reminder: \(error)")
+                                        Self.logger.error("scheduleMatchReminder failed: \(error, privacy: .public)")
                                     }
                                 }
                             }
@@ -47,7 +48,6 @@ struct TodaysBigGameView: View {
                         }
                     }
 
-                    // Close/Dismiss button
                     Button {
                         HapticManager.shared.triggerSelection()
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.72)) {
@@ -65,12 +65,9 @@ struct TodaysBigGameView: View {
             .layoutPriority(1)
 
             HStack(spacing: 14) {
-                TeamStack(team: match.firstTeam, score: match.firstTeam.map { match.score(for: $0) } ?? 0, isLeading: isLeading(match.firstTeam))
-
+                TeamStack(team: match.firstTeam,  score: match.firstTeam.map  { match.score(for: $0) } ?? 0, isLeading: isLeading(match.firstTeam))
                 Text("VS")
-                    .font(E360Font.mono(13, weight: .bold))
-                    .foregroundStyle(E360Color.textTertiary)
-
+                    .font(E360Font.mono(13, weight: .bold)).foregroundStyle(E360Color.textTertiary)
                 TeamStack(team: match.secondTeam, score: match.secondTeam.map { match.score(for: $0) } ?? 0, isLeading: isLeading(match.secondTeam))
             }
 
@@ -78,8 +75,7 @@ struct TodaysBigGameView: View {
                 ESImageView(url: match.displayGameImageURL, fallbackAsset: E360ImageAsset.gamePlaceholder)
                     .frame(width: 18, height: 18)
                 Text(match.game.shortName)
-                Text(match.tournament?.name ?? "Tournament")
-                    .lineLimit(1)
+                Text(match.tournament?.name ?? "Tournament").lineLimit(1)
                 Spacer()
                 Text(timeText)
             }
@@ -90,7 +86,6 @@ struct TodaysBigGameView: View {
         .background(
             ZStack {
                 E360Color.surface
-                
                 LinearGradient(
                     colors: [
                         E360Color.primary.opacity(animateGradient ? 0.22 : 0.08),
@@ -98,21 +93,16 @@ struct TodaysBigGameView: View {
                         E360Color.surface
                     ],
                     startPoint: animateGradient ? .topLeading : .bottomLeading,
-                    endPoint: animateGradient ? .bottomTrailing : .topTrailing
+                    endPoint:   animateGradient ? .bottomTrailing : .topTrailing
                 )
             }
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [match.game.themeColor.opacity(0.55), E360Color.primary.opacity(0.24)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+                .stroke(LinearGradient(
+                    colors: [match.game.themeColor.opacity(0.55), E360Color.primary.opacity(0.24)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1.5)
         )
         .shadow(color: match.game.themeColor.opacity(0.18), radius: 24, y: 8)
         .onAppear {
@@ -123,9 +113,7 @@ struct TodaysBigGameView: View {
                 let center = UNUserNotificationCenter.current()
                 let requests = await center.pendingNotificationRequests()
                 let scheduled = requests.contains { $0.identifier == "match-start-\(match.id)" }
-                await MainActor.run {
-                    self.hasReminder = scheduled
-                }
+                await MainActor.run { self.hasReminder = scheduled }
             }
         }
     }
@@ -137,7 +125,7 @@ struct TodaysBigGameView: View {
 
     private func isLeading(_ team: Team?) -> Bool {
         guard let team else { return false }
-        let score = match.score(for: team)
+        let score    = match.score(for: team)
         let maxScore = match.teams.map(match.score(for:)).max() ?? 0
         return score > 0 && score == maxScore
     }
@@ -151,17 +139,10 @@ private struct TeamStack: View {
     var body: some View {
         VStack(spacing: 10) {
             TeamAvatar(team: team, size: 52)
-
             Text(team?.displayName ?? "TBD")
-                .font(E360Font.body(13, weight: .bold))
-                .foregroundStyle(E360Color.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-
-            ScorePill(
-                score: ArabicNumberFormatter.localized(score),
-                isLeading: isLeading
-            )
+                .font(E360Font.body(13, weight: .bold)).foregroundStyle(E360Color.textPrimary)
+                .lineLimit(1).minimumScaleFactor(0.75)
+            ScorePill(score: ArabicNumberFormatter.localized(score), isLeading: isLeading)
         }
         .frame(maxWidth: .infinity)
     }
