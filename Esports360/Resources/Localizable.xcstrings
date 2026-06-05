@@ -205,6 +205,18 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Up Next" } }
       }
     },
+    "home.today" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "مباريات اليوم" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today's Matches" } }
+      }
+    },
+    "home.today.subtitle" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المواجهات المباشرة والقادمة" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Live and upcoming matchups" } }
+      }
+    },
     "language.arabic" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "العربية" } },
@@ -668,6 +680,12 @@
       }
     },
     "tab.saudiHub" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "المقر السعودي" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saudi Hub" } }
+      }
+    },
+    "tab.tournaments" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "البطولات" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Tournaments" } }
