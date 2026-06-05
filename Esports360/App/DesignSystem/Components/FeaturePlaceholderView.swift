@@ -15,7 +15,7 @@ struct FeaturePlaceholderView: View {
                     .foregroundStyle(E360Color.primary)
 
                 Text(title)
-                    .e360ScreenTitle()
+                    .e360Title()
                     .multilineTextAlignment(.center)
 
                 Text(subtitle)

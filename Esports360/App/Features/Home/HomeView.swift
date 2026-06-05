@@ -97,7 +97,7 @@ private struct HomeHeroHeader: View {
 }
 
 // MARK: - Featured Hero Card
-private struct HomeFeaturedMatchCard: View {
+struct HomeFeaturedMatchCard: View {
     let match: BackendMatchDTO
     @State private var shimmer = false
 

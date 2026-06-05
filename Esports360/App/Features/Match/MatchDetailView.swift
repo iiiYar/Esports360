@@ -44,11 +44,12 @@ final class MatchDetailViewModel: ObservableObject {
     }
 }
 
-// MARK: - MatchDetailContainerView
 struct MatchDetailContainerView: View {
     @StateObject private var viewModel: MatchDetailViewModel
+    private let matchID: String
 
     init(match: Match) {
+        self.matchID = match.id
         _viewModel = StateObject(wrappedValue: MatchDetailViewModel(
             matchID: match.id,
             initialMatch: match
@@ -56,6 +57,7 @@ struct MatchDetailContainerView: View {
     }
 
     init(matchID: String) {
+        self.matchID = matchID
         _viewModel = StateObject(wrappedValue: MatchDetailViewModel(matchID: matchID))
     }
 
@@ -86,24 +88,18 @@ struct MatchDetailContainerView: View {
                 }
             }
         }
-        .task(id: viewModel.match == nil ? matchID : nil) {
-            // deep link: لا يوجد match مبدئي — نجلب مباشرة
-            if viewModel.match == nil { await viewModel.load() }
-        }
-        .task(id: "initial") {
-            // فتح من القائمة: match موجود — نحدث في الخلفية بهدوء
-            if viewModel.match != nil && viewModel.state == .idle {
+        .task(id: matchID) {
+            if viewModel.match == nil {
+                // deep link: لا يوجد match مبدئي — نجلب مباشرة
+                await viewModel.load()
+            } else if viewModel.state == .idle {
+                // فتح من القائمة: match موجود — نحدث في الخلفية بهدوء
                 await viewModel.load(forceRefresh: false)
             }
         }
         .refreshable {
             await viewModel.load(forceRefresh: true)
         }
-    }
-
-    private var matchID: String {
-        // نستخرج matchID من ViewModel عبر reflection آمن
-        viewModel.match?.id ?? ""
     }
 }
 
@@ -399,33 +395,159 @@ private struct MatchMapSeriesView: View {
     private var sortedMaps: [MatchMap] { maps.sorted { $0.number < $1.number } }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: showsCS2Scores ? 12 : 10) {
             ForEach(sortedMaps) { map in
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle().fill(circleFill(for: map)).frame(width: 32, height: 32)
-                            .overlay(Circle().stroke(circleStroke(for: map), lineWidth: map.number == currentMapNumber ? 1.5 : 1))
-                        Text(ArabicNumberFormatter.localized(map.number))
-                            .font(E360Font.number(13, weight: .black))
-                            .foregroundStyle(map.number == currentMapNumber ? .white : E360Color.textSecondary)
-                    }
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(mapTitle(for: map)).font(E360Font.body(13, weight: .bold)).foregroundStyle(E360Color.textPrimary).lineLimit(1)
-                        if showsCS2Scores { cs2ScoreLine(for: map) }
-                        else if let d = durationText(for: map) { Text(d).font(E360Font.mono(11, weight: .semibold)).foregroundStyle(E360Color.textSecondary) }
-                    }
-                    Spacer()
-                    Text(statusText(for: map))
-                        .font(E360Font.body(11, weight: .black)).foregroundStyle(statusColor(for: map))
-                        .padding(.horizontal, 9).padding(.vertical, 5)
-                        .background(statusColor(for: map).opacity(0.12), in: Capsule())
+                if showsCS2Scores {
+                    cs2MapRoundCard(for: map)
+                } else {
+                    standardMapRow(for: map)
                 }
-                .padding(10)
-                .background(E360Color.elevatedSurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(map.number == currentMapNumber ? game.themeColor.opacity(0.32) : E360Color.divider, lineWidth: 1))
             }
         }
+    }
+
+    private func standardMapRow(for map: MatchMap) -> some View {
+        HStack(spacing: 12) {
+            mapNumberBadge(for: map)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(mapTitle(for: map))
+                    .font(E360Font.body(13, weight: .bold))
+                    .foregroundStyle(E360Color.textPrimary)
+                    .lineLimit(1)
+                if let d = durationText(for: map) {
+                    Text(d)
+                        .font(E360Font.mono(11, weight: .semibold))
+                        .foregroundStyle(E360Color.textSecondary)
+                }
+            }
+            Spacer()
+            statusBadge(for: map)
+        }
+        .padding(10)
+        .background(E360Color.elevatedSurface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(mapBorder(for: map, cornerRadius: 14))
+    }
+
+    private func cs2MapRoundCard(for map: MatchMap) -> some View {
+        let orderedScores = scoresForDisplay(map)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                mapNumberBadge(for: map)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(mapTitle(for: map))
+                        .font(E360Font.body(15, weight: .black))
+                        .foregroundStyle(E360Color.textPrimary)
+                        .lineLimit(1)
+                    Text(String(format: String(localized: "match.mapNumber"), ArabicNumberFormatter.localized(map.number)))
+                        .font(E360Font.body(11, weight: .bold))
+                        .foregroundStyle(E360Color.textSecondary)
+                }
+                Spacer()
+                statusBadge(for: map)
+            }
+
+            if orderedScores.count >= 2 {
+                let firstScore = orderedScores[0]
+                let secondScore = orderedScores[1]
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .center, spacing: 10) {
+                        teamRoundScoreBlock(
+                            team: team(for: firstScore),
+                            score: firstScore,
+                            isLeading: true
+                        )
+
+                        Text(":")
+                            .font(E360Font.number(22, weight: .black))
+                            .foregroundStyle(E360Color.textSecondary)
+
+                        teamRoundScoreBlock(
+                            team: team(for: secondScore),
+                            score: secondScore,
+                            isLeading: false
+                        )
+                    }
+
+                    if let halves = halvesText(orderedScores) {
+                        Text(halves)
+                            .font(E360Font.mono(11, weight: .semibold))
+                            .foregroundStyle(E360Color.textSecondary)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    } else if let d = durationText(for: map) {
+                        Text(d)
+                            .font(E360Font.mono(11, weight: .semibold))
+                            .foregroundStyle(E360Color.textSecondary)
+                    }
+                }
+                .padding(12)
+                .background(E360Color.surface.opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            } else {
+                Text("match.cs2RoundScoreUnavailable")
+                    .font(E360Font.body(12, weight: .medium))
+                    .foregroundStyle(E360Color.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 10)
+                    .background(E360Color.surface.opacity(0.58), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+        }
+        .padding(12)
+        .background(E360Color.elevatedSurface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(mapBorder(for: map, cornerRadius: 16))
+    }
+
+    private func mapNumberBadge(for map: MatchMap) -> some View {
+        ZStack {
+            Circle().fill(circleFill(for: map)).frame(width: 34, height: 34)
+                .overlay(Circle().stroke(circleStroke(for: map), lineWidth: map.number == currentMapNumber ? 1.5 : 1))
+            Text(ArabicNumberFormatter.localized(map.number))
+                .font(E360Font.number(13, weight: .black))
+                .foregroundStyle(map.number == currentMapNumber ? .white : E360Color.textSecondary)
+        }
+    }
+
+    private func statusBadge(for map: MatchMap) -> some View {
+        Text(statusText(for: map))
+            .font(E360Font.body(11, weight: .black))
+            .foregroundStyle(statusColor(for: map))
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(statusColor(for: map).opacity(0.12), in: Capsule())
+    }
+
+    private func teamRoundScoreBlock(team: Team?, score: MatchMapScore, isLeading: Bool) -> some View {
+        let horizontalAlignment: HorizontalAlignment = isLeading ? .leading : .trailing
+        let frameAlignment: Alignment = isLeading ? .leading : .trailing
+
+        return VStack(alignment: horizontalAlignment, spacing: 5) {
+            Text(team?.displayName ?? "TBD")
+                .font(E360Font.body(12, weight: .bold))
+                .foregroundStyle(E360Color.textSecondary)
+                .lineLimit(1)
+
+            HStack(spacing: 6) {
+                Text(ArabicNumberFormatter.localized(score.totalRounds))
+                    .font(E360Font.number(26, weight: .black))
+                    .foregroundStyle(E360Color.textPrimary)
+                if let side = normalizedSide(score.currentSide) {
+                    Text(side)
+                        .font(E360Font.mono(10, weight: .black))
+                        .foregroundStyle(side == "CT" ? E360Color.accent : E360Color.gold)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background((side == "CT" ? E360Color.accent : E360Color.gold).opacity(0.13), in: Capsule())
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: frameAlignment)
+        }
+        .frame(maxWidth: .infinity, alignment: frameAlignment)
+    }
+
+    private func mapBorder(for map: MatchMap, cornerRadius: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .stroke(map.number == currentMapNumber ? game.themeColor.opacity(0.32) : E360Color.divider, lineWidth: 1)
     }
 
     private func mapTitle(for map: MatchMap) -> String {
@@ -460,37 +582,22 @@ private struct MatchMapSeriesView: View {
         return E360Color.textSecondary
     }
 
-    @ViewBuilder
-    private func cs2ScoreLine(for map: MatchMap) -> some View {
-        let ordered = scoresForDisplay(map)
-        if ordered.count >= 2 {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 8) {
-                    Text(scoreText(ordered)).font(E360Font.number(16, weight: .black)).foregroundStyle(E360Color.textPrimary)
-                    if let side = sideText(ordered) {
-                        Text(side).font(E360Font.mono(10, weight: .bold)).foregroundStyle(E360Color.gold)
-                            .padding(.horizontal, 6).padding(.vertical, 3).background(E360Color.gold.opacity(0.12), in: Capsule())
-                    }
-                }
-                if let halves = halvesText(ordered) { Text(halves).font(E360Font.mono(11, weight: .semibold)).foregroundStyle(E360Color.textSecondary) }
-                else if let d = durationText(for: map) { Text(d).font(E360Font.mono(11, weight: .semibold)).foregroundStyle(E360Color.textSecondary) }
-            }
-        } else {
-            Text("match.cs2RoundScoreUnavailable").font(E360Font.body(11, weight: .medium)).foregroundStyle(E360Color.textSecondary)
-        }
-    }
     private func scoresForDisplay(_ map: MatchMap) -> [MatchMapScore] {
         let byID = Dictionary(uniqueKeysWithValues: map.scores.map { ($0.teamID, $0) })
         let ordered = teams.compactMap { byID[$0.id] }
         return ordered.isEmpty ? map.scores : ordered
     }
-    private func scoreText(_ s: [MatchMapScore]) -> String {
-        s.prefix(2).map { ArabicNumberFormatter.localized($0.totalRounds) }.joined(separator: " : ")
+
+    private func team(for score: MatchMapScore) -> Team? {
+        teams.first { $0.id == score.teamID }
     }
-    private func sideText(_ s: [MatchMapScore]) -> String? {
-        let sides = s.prefix(2).compactMap(\.currentSide)
-        return sides.count == 2 ? sides.joined(separator: " / ") : nil
+
+    private func normalizedSide(_ rawValue: String?) -> String? {
+        guard let rawValue else { return nil }
+        let side = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        return side.isEmpty ? nil : side
     }
+
     private func halvesText(_ vals: [MatchMapScore]) -> String? {
         let v = Array(vals.prefix(2))
         guard v.count == 2 else { return nil }

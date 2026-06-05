@@ -33,7 +33,7 @@ struct TournamentDetailView: View {
                         TournamentTeamsSection(
                             teams: viewModel.teams,
                             isLoading: viewModel.isLoadingTeams,
-                            gameCode: tournament.gameCode
+                            gameCode: tournament.gameCode ?? "unknown"
                         )
                     }
                     .padding(18)
@@ -137,7 +137,7 @@ struct TournamentMatchesSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("tournament.matches", defaultValue: "المباريات")
+                Text(String(localized: "tournament.matches", defaultValue: "المباريات"))
                     .font(E360Font.display(18, weight: .bold))
                     .foregroundStyle(E360Color.textPrimary)
                 Spacer()
@@ -260,7 +260,7 @@ struct TournamentTeamsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("tournament.teams", defaultValue: "الفرق المشاركة")
+                Text(String(localized: "tournament.teams", defaultValue: "الفرق المشاركة"))
                     .font(E360Font.display(18, weight: .bold))
                     .foregroundStyle(E360Color.textPrimary)
                 Spacer()

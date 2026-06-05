@@ -9,8 +9,10 @@ series map wins such as 1-0 or 1-1.
 import asyncio
 import json
 import time
+from datetime import datetime
 from typing import Any
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from bs4 import BeautifulSoup
 from curl_cffi import requests
@@ -118,7 +120,12 @@ class HLTvEngine:
         settings = get_settings()
         if settings.cs2_hltv_detail_enabled:
             live_matches = [m for m in matches_data if m.get("status") == "live"]
-            detail_candidates = live_matches
+            due_upcoming_matches = [
+                m for m in matches_data
+                if m.get("status") == "upcoming"
+                and self._is_due_for_detail_probe(m.get("scheduled_at"), settings.app_timezone)
+            ][: settings.cs2_hltv_completed_detail_limit]
+            detail_candidates = live_matches + due_upcoming_matches
 
             if not detail_candidates and settings.cs2_hltv_completed_detail_limit > 0:
                 results_html = await self._fetch_url(HLTV_RESULTS_URL)
@@ -141,7 +148,7 @@ class HLTvEngine:
                 live_count = sum(1 for m in detail_candidates if m.get("status") == "live")
                 print(
                     "HLTV Engine: HLTV detail fetcher / optional enrichment starting to fetch "
-                    f"{len(detail_candidates)} matches ({live_count} live)...",
+                    f"{len(detail_candidates)} matches ({live_count} live, {len(due_upcoming_matches)} due upcoming)...",
                     flush=True,
                 )
                 sem = asyncio.Semaphore(2)
@@ -186,6 +193,32 @@ class HLTvEngine:
         elements.extend(section.select("[data-match-id]"))
         return elements
 
+    @staticmethod
+    def _is_due_for_detail_probe(scheduled_at: Any, app_timezone: str) -> bool:
+        if not isinstance(scheduled_at, str):
+            return False
+        value = scheduled_at.strip()
+        if len(value) != 5 or value[2] != ":":
+            return False
+        hour_text, minute_text = value.split(":", 1)
+        if not hour_text.isdigit() or not minute_text.isdigit():
+            return False
+
+        try:
+            tz = ZoneInfo(app_timezone)
+            now = datetime.now(tz)
+            scheduled = now.replace(
+                hour=int(hour_text),
+                minute=int(minute_text),
+                second=0,
+                microsecond=0,
+            )
+        except Exception:
+            return False
+
+        elapsed_seconds = (now - scheduled).total_seconds()
+        return 0 <= elapsed_seconds <= 8 * 60 * 60
+
     def _append_parsed_matches(
         self,
         matches: list[dict[str, Any]],
@@ -209,13 +242,13 @@ class HLTvEngine:
         seen: set[str] = set()
 
         # === Live matches ===
-        self._append_parsed_matches(matches, seen, soup.select(".liveMatches, .liveMatch"), "live")
+        self._append_parsed_matches(matches, seen, soup.select(".liveMatches, .liveMatch, .live-match-container, [live=true]"), "live")
 
         # === Upcoming ===
         self._append_parsed_matches(
             matches,
             seen,
-            soup.select(".upcomingMatchesSection, .upcomingMatch, .match-day"),
+            soup.select(".upcomingMatchesSection, .upcomingMatch, .match-day, .upcoming-match"),
             "upcoming",
         )
 
@@ -265,16 +298,20 @@ class HLTvEngine:
             return None
 
         # Team names
-        for sel in (
-            ".team1, .matchTeam1, .team-left, [class*=team1], [class*=Team1]",
-            ".team2, .matchTeam2, .team-right, [class*=team2], [class*=Team2]",
-        ):
-            pass
-
         team1_el = el.select_one(".team1, .matchTeam1, .team-left, [class*=team1], [class*=Team1]")
         team2_el = el.select_one(".team2, .matchTeam2, .team-right, [class*=team2], [class*=Team2]")
         team1 = team1_el.get_text(strip=True) if team1_el else ""
         team2 = team2_el.get_text(strip=True) if team2_el else ""
+
+        if not team1 or not team2:
+            teams_el = el.select(".match-teamname")
+            if len(teams_el) < 2:
+                teams_el = el.select(".match-team")
+            if len(teams_el) < 2:
+                teams_el = el.select(".team")
+            if len(teams_el) >= 2:
+                team1 = teams_el[0].get_text(strip=True)
+                team2 = teams_el[1].get_text(strip=True)
 
         if not team1 or not team2:
             return None
@@ -324,20 +361,56 @@ class HLTvEngine:
     # DB & Smart Reconciliation
     # ------------------------------------------------------------------
 
-    def _find_primary_match_id(self, conn: Connection, team1: str, team2: str) -> str | None:
-        """Find an existing live PandaScore match that has these two teams (fuzzy matching)."""
+    def _find_primary_match_id(
+        self,
+        conn: Connection,
+        team1: str,
+        team2: str,
+        exclude_match_id: str | None = None,
+    ) -> str | None:
+        """Find an existing PandaScore match that has these two teams (fuzzy matching)."""
         try:
             with conn.cursor() as cur:
-                # Get all live CS2 matches in the DB
                 cur.execute(
                     """
-                    SELECT m.id, m.name 
-                    FROM matches m 
-                    WHERE m.status = 'live' 
-                      AND m.game_id = (SELECT id FROM games WHERE code = 'cs2' LIMIT 1)
-                    """
+                    SELECT m.id,
+                           m.name,
+                           m.status,
+                           COALESCE(
+                               jsonb_agg(
+                                   jsonb_build_object(
+                                       'name', team.name,
+                                       'short_name', team.short_name
+                                   )
+                                   ORDER BY mp.seed NULLS LAST, mp.side
+                               ) FILTER (WHERE team.id IS NOT NULL),
+                               '[]'::jsonb
+                           ) AS teams
+                    FROM matches m
+                    LEFT JOIN match_participants mp ON mp.match_id = m.id
+                    LEFT JOIN teams team ON team.id = mp.team_id
+                    WHERE m.game_id = (SELECT id FROM games WHERE code = 'cs2' LIMIT 1)
+                      AND (%s::uuid IS NULL OR m.id <> %s::uuid)
+                      AND m.status IN ('live', 'completed', 'finished', 'scheduled', 'upcoming', 'pre_match')
+                      AND (
+                          m.scheduled_at IS NULL
+                          OR m.scheduled_at >= now() - interval '14 days'
+                          OR m.begin_at >= now() - interval '14 days'
+                          OR m.created_at >= now() - interval '14 days'
+                      )
+                    GROUP BY m.id
+                    ORDER BY
+                        CASE
+                            WHEN m.status = 'live' THEN 0
+                            WHEN m.status IN ('completed', 'finished') THEN 1
+                            ELSE 2
+                        END,
+                        m.scheduled_at DESC NULLS LAST,
+                        m.created_at DESC
+                    """,
+                    (exclude_match_id, exclude_match_id),
                 )
-                live_matches = cur.fetchall()
+                candidate_matches = cur.fetchall()
                 
                 # Normalize team names for fuzzy matching
                 t1_clean = team1.lower().strip()
@@ -346,28 +419,41 @@ class HLTvEngine:
                 t1_norm = self._clean_name(t1_clean)
                 t2_norm = self._clean_name(t2_clean)
                 
-                for match_row in live_matches:
+                for match_row in candidate_matches:
                     match_id, match_name = match_row["id"], match_row["name"]
+                    teams = match_row.get("teams") or []
+                    team_candidates = [
+                        str(item.get("name") or item.get("short_name") or "")
+                        for item in teams
+                        if isinstance(item, dict)
+                    ]
+
+                    if len(team_candidates) >= 2:
+                        db_t1_norm = self._clean_name(team_candidates[0])
+                        db_t2_norm = self._clean_name(team_candidates[1])
+                        if self._team_pair_matches(t1_norm, t2_norm, db_t1_norm, db_t2_norm):
+                            return match_id
+
+                    # Fallback for records that do not have participant rows yet.
                     m_name_clean = match_name.lower()
-                    
-                    # Usually names are "Team A vs Team B"
                     if " vs " in m_name_clean:
                         parts = m_name_clean.split(" vs ")
                         db_t1_norm = self._clean_name(parts[0])
                         db_t2_norm = self._clean_name(parts[1])
-                        
-                        # Check direct match
-                        if (t1_norm in db_t1_norm or db_t1_norm in t1_norm) and \
-                           (t2_norm in db_t2_norm or db_t2_norm in t2_norm):
-                            return match_id
-                        
-                        # Check reverse match
-                        if (t1_norm in db_t2_norm or db_t2_norm in t1_norm) and \
-                           (t2_norm in db_t1_norm or db_t1_norm in t2_norm):
+                        if self._team_pair_matches(t1_norm, t2_norm, db_t1_norm, db_t2_norm):
                             return match_id
         except Exception as e:
             print(f"HLTV Engine: match lookup error: {e}", flush=True)
         return None
+
+    @staticmethod
+    def _names_match(left: str, right: str) -> bool:
+        return bool(left and right and (left in right or right in left))
+
+    def _team_pair_matches(self, t1_norm: str, t2_norm: str, db_t1_norm: str, db_t2_norm: str) -> bool:
+        direct = self._names_match(t1_norm, db_t1_norm) and self._names_match(t2_norm, db_t2_norm)
+        reverse = self._names_match(t1_norm, db_t2_norm) and self._names_match(t2_norm, db_t1_norm)
+        return direct or reverse
 
     @staticmethod
     def _clean_name(name: str) -> str:
@@ -1111,17 +1197,22 @@ class HLTvEngine:
                                 ),
                             )
                     
-                    # 3. Smart lookup of PandaScore match if this is live
+                    # 3. Smart lookup of PandaScore match so HLTV map scores land on the app-visible match.
                     primary_match_id = match_id
                     t_names = [t.get("name", "") for t in m.get("teams", [])]
-                    if len(t_names) == 2 and status == "live":
-                        found_primary = self._find_primary_match_id(conn, t_names[0], t_names[1])
+                    if len(t_names) == 2:
+                        found_primary = self._find_primary_match_id(
+                            conn,
+                            t_names[0],
+                            t_names[1],
+                            exclude_match_id=str(match_id),
+                        )
                         if found_primary:
                             primary_match_id = found_primary
                             print(f"HLTV Engine: linked HLTV match '{m.get('name')}' to primary match {primary_match_id}", flush=True)
 
                     detail_html = m.get("detail_html")
-                    if detail_html and status in {"live", "completed"}:
+                    if detail_html and status in {"live", "completed", "scheduled"}:
                         parsed_maps = self._sync_detail_page_scores(
                             conn,
                             primary_match_id,

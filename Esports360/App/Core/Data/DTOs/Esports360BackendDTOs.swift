@@ -171,6 +171,28 @@ struct BackendMatchGameDTO: Decodable {
     let endedAt: Date?
     let durationSeconds: Int?
     let scores: [BackendMatchGameScoreDTO]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, number, mapName, status, startedAt, endedAt, durationSeconds, scores
+        case map_name, game_number, started_at, ended_at, duration_seconds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        number = try container.decodeIfPresent(Int.self, forKey: .number)
+            ?? container.decodeIfPresent(Int.self, forKey: .game_number)
+        mapName = try container.decodeIfPresent(String.self, forKey: .mapName)
+            ?? container.decodeIfPresent(String.self, forKey: .map_name)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
+        startedAt = try container.decodeIfPresent(Date.self, forKey: .startedAt)
+            ?? container.decodeIfPresent(Date.self, forKey: .started_at)
+        endedAt = try container.decodeIfPresent(Date.self, forKey: .endedAt)
+            ?? container.decodeIfPresent(Date.self, forKey: .ended_at)
+        durationSeconds = try container.decodeIfPresent(Int.self, forKey: .durationSeconds)
+            ?? container.decodeIfPresent(Int.self, forKey: .duration_seconds)
+        scores = try container.decodeIfPresent([BackendMatchGameScoreDTO].self, forKey: .scores)
+    }
 }
 
 struct BackendMatchGameScoreDTO: Decodable {
@@ -180,6 +202,27 @@ struct BackendMatchGameScoreDTO: Decodable {
     let secondHalfRounds: Int?
     let overtimeRounds: Int?
     let currentSide: String?
+
+    enum CodingKeys: String, CodingKey {
+        case teamId, totalRounds, firstHalfRounds, secondHalfRounds, overtimeRounds, currentSide
+        case team_id, total_rounds, first_half_rounds, second_half_rounds, overtime_rounds, current_side
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        teamId = try container.decodeIfPresent(String.self, forKey: .teamId)
+            ?? container.decode(String.self, forKey: .team_id)
+        totalRounds = try container.decodeIfPresent(Int.self, forKey: .totalRounds)
+            ?? container.decodeIfPresent(Int.self, forKey: .total_rounds)
+        firstHalfRounds = try container.decodeIfPresent(Int.self, forKey: .firstHalfRounds)
+            ?? container.decodeIfPresent(Int.self, forKey: .first_half_rounds)
+        secondHalfRounds = try container.decodeIfPresent(Int.self, forKey: .secondHalfRounds)
+            ?? container.decodeIfPresent(Int.self, forKey: .second_half_rounds)
+        overtimeRounds = try container.decodeIfPresent(Int.self, forKey: .overtimeRounds)
+            ?? container.decodeIfPresent(Int.self, forKey: .overtime_rounds)
+        currentSide = try container.decodeIfPresent(String.self, forKey: .currentSide)
+            ?? container.decodeIfPresent(String.self, forKey: .current_side)
+    }
 }
 
 struct BackendMatchStreamDTO: Decodable {
@@ -237,6 +280,38 @@ struct BackendRosterPlayerDTO: Decodable {
 }
 
 extension BackendMatchDTO {
+    var gameCode: String {
+        game?.code ?? "unknown"
+    }
+
+    var team1Name: String? {
+        teams?.first?.name
+    }
+
+    var team2Name: String? {
+        (teams ?? []).count > 1 ? teams?[1].name : nil
+    }
+
+    var team1ImageUrl: String? {
+        teams?.first?.imageUrl
+    }
+
+    var team2ImageUrl: String? {
+        (teams ?? []).count > 1 ? teams?[1].imageUrl : nil
+    }
+
+    var team1Score: Int? {
+        teams?.first?.score
+    }
+
+    var team2Score: Int? {
+        (teams ?? []).count > 1 ? teams?[1].score : nil
+    }
+
+    var tournamentName: String? {
+        tournament?.name
+    }
+
     func toDomain(apiClient: Esports360APIClient) async -> Match {
         let domainTeams = (teams ?? []).map { dto in
             Team(
@@ -447,9 +522,65 @@ struct BackendPlayerDTO: Decodable {
     }
 }
 
+typealias GameHubMatchDTO = BackendMatchDTO
+typealias GameHubTournamentDTO = BackendTournamentDTO
+typealias GameHubTeamDTO = BackendTeamDTO
+
 struct GameHubDTO: Decodable {
     let game: BackendGameDTO
     let matches: [BackendMatchDTO]
     let teams: [BackendTeamDTO]
     let tournaments: [BackendTournamentDTO]
+}
+
+struct BackendTournamentMatchDTO: Decodable, Identifiable {
+    let id: String
+    let status: String?
+    let scheduledAt: Date?
+    let team1Name: String?
+    let team2Name: String?
+    let team1Score: Int?
+    let team2Score: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id, status, scheduledAt, team1Name, team2Name, team1Score, team2Score
+        case scheduled_at, team1_name, team2_name, team1_score, team2_score
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
+        scheduledAt = try container.decodeIfPresent(Date.self, forKey: .scheduledAt)
+            ?? container.decodeIfPresent(Date.self, forKey: .scheduled_at)
+        team1Name = try container.decodeIfPresent(String.self, forKey: .team1Name)
+            ?? container.decodeIfPresent(String.self, forKey: .team1_name)
+        team2Name = try container.decodeIfPresent(String.self, forKey: .team2Name)
+            ?? container.decodeIfPresent(String.self, forKey: .team2_name)
+        team1Score = try container.decodeIfPresent(Int.self, forKey: .team1Score)
+            ?? container.decodeIfPresent(Int.self, forKey: .team1_score)
+        team2Score = try container.decodeIfPresent(Int.self, forKey: .team2Score)
+            ?? container.decodeIfPresent(Int.self, forKey: .team2_score)
+    }
+}
+
+struct BackendTournamentTeamDTO: Decodable, Identifiable {
+    let id: String
+    let name: String?
+    let acronym: String?
+    let imageUrl: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, acronym, imageUrl
+        case image_url
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        acronym = try container.decodeIfPresent(String.self, forKey: .acronym)
+        imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
+            ?? container.decodeIfPresent(String.self, forKey: .image_url)
+    }
 }

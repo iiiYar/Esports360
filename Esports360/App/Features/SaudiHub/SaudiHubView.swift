@@ -55,16 +55,18 @@ struct SaudiHubView: View {
                             } label: {
                                 SaudiTeamCard(profile: profile, saudiNeon: saudiNeon)
                             }
-                            .buttonStyle(PressScaleButtonStyle())
+                            .buttonStyle(E360PressScale())
                         }
                     }
 
-                    NavigationLink {
-                        TournamentBracketView()
-                    } label: {
-                        TournamentCTA(saudiNeon: saudiNeon)
+                    if let bracket = viewModel.featuredBracket {
+                        NavigationLink {
+                            TournamentBracketView(tournament: bracket)
+                        } label: {
+                            TournamentCTA(saudiNeon: saudiNeon)
+                        }
+                        .buttonStyle(E360PressScale())
                     }
-                    .buttonStyle(PressScaleButtonStyle())
                 }
                 .padding(18)
             }
@@ -208,7 +210,7 @@ private struct SaudiTeamCard: View {
                 .font(.system(size: 14, weight: .bold)).foregroundStyle(saudiNeon.opacity(0.8))
         }
         .padding(18)
-        .e360Card(highlighted: true, cornerRadius: 20, borderColor: saudiNeon.opacity(0.35))
+        .e360GlassCard(cornerRadius: 20, borderOpacity: 0.35, shadowRadius: 18, tintColor: saudiNeon)
     }
 }
 
@@ -257,11 +259,17 @@ private struct TournamentCTA: View {
 // MARK: - ViewModel
 @MainActor
 private final class SaudiHubViewModel: ObservableObject {
+    #if DEBUG
     @Published private(set) var teamProfiles: [TeamProfile] = [
         MockEsportsData.teamFalconsProfile,
         MockEsportsData.teamProfile(id: MockEsportsData.twistedMinds.id),
         MockEsportsData.teamProfile(id: MockEsportsData.nasr.id)
     ].compactMap(\.self)
+    let featuredBracket: TournamentBracket? = MockEsportsData.ewcTournament
+    #else
+    @Published private(set) var teamProfiles: [TeamProfile] = []
+    let featuredBracket: TournamentBracket? = nil
+    #endif
 
     @Published private(set) var isLoading    = false
     @Published private(set) var errorMessage: String?

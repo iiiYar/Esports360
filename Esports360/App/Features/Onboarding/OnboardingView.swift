@@ -143,7 +143,7 @@ struct OnboardingView: View {
             .padding(.bottom, 8)
             VStack(spacing: 14) {
                 Text(E360Constants.arabicBrandName)
-                    .font(E360Font.hero(42, weight: .black))
+                    .font(E360Font.display(42, weight: .black))
                     .foregroundStyle(LinearGradient(colors: [E360Color.textPrimary, E360Color.textPrimary.opacity(0.8)],
                         startPoint: .top, endPoint: .bottom))
                     .shadow(color: E360Color.primary.opacity(0.3), radius: 8)
@@ -171,7 +171,7 @@ struct OnboardingView: View {
                 Text(isRegisterMode
                     ? String(localized: "onboarding.login.register.title",  defaultValue: "إنشاء حساب ✨")
                     : String(localized: "onboarding.login.signin.title",    defaultValue: "تسجيل الدخول 🔐"))
-                    .font(E360Font.hero(32, weight: .black)).foregroundStyle(E360Color.textPrimary)
+                    .font(E360Font.display(32, weight: .black)).foregroundStyle(E360Color.textPrimary)
                 Text(isRegisterMode
                     ? String(localized: "onboarding.login.register.subtitle", defaultValue: "أنشئ حسابك لحفظ تفضيلاتك ومتابعاتك المفضلة.")
                     : String(localized: "onboarding.login.signin.subtitle",   defaultValue: "سجل دخولك لمزامنة أنديتك وتفضيلاتك عبر الأجهزة."))
@@ -351,7 +351,7 @@ struct OnboardingView: View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
                 Text(String(localized: "onboarding.games.title", defaultValue: "اختر ألعابك المفضلة 🎮"))
-                    .font(E360Font.hero(26, weight: .black)).foregroundStyle(E360Color.textPrimary)
+                    .font(E360Font.display(26, weight: .black)).foregroundStyle(E360Color.textPrimary)
                 Text(String(localized: "onboarding.games.subtitle",
                     defaultValue: "سنقوم بتخصيص تغذية المباريات بناءً على اختيارك"))
                     .font(E360Font.body(13, weight: .medium)).foregroundStyle(E360Color.textSecondary)
@@ -407,7 +407,7 @@ struct OnboardingView: View {
         VStack(spacing: 16) {
             VStack(spacing: 8) {
                 Text(String(localized: "onboarding.teams.title", defaultValue: "تابع أنديتك المفضلة ⚔️"))
-                    .font(E360Font.hero(26, weight: .black)).foregroundStyle(E360Color.textPrimary)
+                    .font(E360Font.display(26, weight: .black)).foregroundStyle(E360Color.textPrimary)
                 Text(String(localized: "onboarding.teams.subtitle",
                     defaultValue: "احصل على إشعارات فورية بمواعيد مبارياتهم"))
                     .font(E360Font.body(13, weight: .medium)).foregroundStyle(E360Color.textSecondary)

@@ -115,7 +115,7 @@ struct GameHubView: View {
                 VStack(spacing: 12) {
                     ForEach(matches, id: \.id) { match in
                         NavigationLink(destination: MatchDetailContainerView(matchID: match.id)) {
-                            matchRow(match: match, themeColor: themeColor)
+                            matchRow(match, themeColor: themeColor)
                         }
                         .buttonStyle(.plain)
                     }
@@ -174,7 +174,7 @@ struct GameHubView: View {
                 VStack(spacing: 12) {
                     ForEach(tournaments, id: \.id) { tournament in
                         NavigationLink(destination: TournamentDetailView(tournamentId: tournament.id)) {
-                            tournamentRow(tournament: tournament, themeColor: themeColor)
+                            tournamentRow(tournament, themeColor: themeColor)
                         }
                         .buttonStyle(.plain)
                     }
@@ -280,9 +280,9 @@ private final class GameHubViewModel: ObservableObject {
     @Published private(set) var tournaments: [GameHubTournamentDTO] = []
     @Published private(set) var teams:       [GameHubTeamDTO]       = []
 
-    @Published private(set) var isLoadingMatches:     = false
-    @Published private(set) var isLoadingTournaments: = false
-    @Published private(set) var isLoadingTeams:       = false
+    @Published private(set) var isLoadingMatches:     Bool = false
+    @Published private(set) var isLoadingTournaments: Bool = false
+    @Published private(set) var isLoadingTeams:       Bool = false
     @Published private(set) var errorMessage: String?
 
     private let apiClient = RepositoryFactory.makeAPIClient()

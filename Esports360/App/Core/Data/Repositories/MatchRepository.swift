@@ -1,6 +1,18 @@
 import Foundation
 
-protocol MatchRepository {
+protocol MatchRepositoryProtocol {
+    func liveMatches(limit: Int, forceRefresh: Bool) async throws -> [BackendMatchDTO]
+    func upcomingMatches(limit: Int, forceRefresh: Bool) async throws -> [BackendMatchDTO]
+    func recentMatches(limit: Int, forceRefresh: Bool) async throws -> [BackendMatchDTO]
+}
+
+extension MatchRepositoryProtocol {
+    func liveMatches(limit: Int = 50, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] { [] }
+    func upcomingMatches(limit: Int = 20, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] { [] }
+    func recentMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] { [] }
+}
+
+protocol MatchRepository: MatchRepositoryProtocol {
     func todaysMatches(forceRefresh: Bool) async throws -> [Match]
     func match(id: String, forceRefresh: Bool) async throws -> Match
 }

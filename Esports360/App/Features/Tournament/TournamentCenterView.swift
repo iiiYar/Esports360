@@ -5,6 +5,8 @@ struct TournamentCenterView: View {
     @State private var selectedFilter: TournamentStatusFilter = .all
     @State private var searchText = ""
 
+
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -12,7 +14,13 @@ struct TournamentCenterView: View {
                     hero
                     metricsStrip
 
-                    if viewModel.featuredTournaments.isEmpty == false {
+                    if viewModel.isLoading && viewModel.tournaments.isEmpty {
+                        TournamentSectionSkeleton(
+                            title: String(localized: "tournament.section.featured", defaultValue: "أبرز البطولات المميزة"),
+                            subtitle: String(localized: "tournament.section.featured.sub", defaultValue: "بطولات عالمية ومواسم كبرى جاهزة للمتابعة"),
+                            style: .featured
+                        )
+                    } else if viewModel.featuredTournaments.isEmpty == false {
                         tournamentSection(
                             title: String(localized: "tournament.section.featured", defaultValue: "أبرز البطولات المميزة"),
                             subtitle: String(localized: "tournament.section.featured.sub", defaultValue: "بطولات عالمية ومواسم كبرى جاهزة للمتابعة"),
@@ -21,7 +29,13 @@ struct TournamentCenterView: View {
                         )
                     }
 
-                    if viewModel.majorTournaments.isEmpty == false {
+                    if viewModel.isLoading && viewModel.tournaments.isEmpty {
+                        TournamentSectionSkeleton(
+                            title: String(localized: "tournament.section.major", defaultValue: "الميجر والبطولات العالمية"),
+                            subtitle: String(localized: "tournament.section.major.sub", defaultValue: "شعارات، جوائز، ألعاب، ومعلومات تشغيلية من قاعدة البيانات"),
+                            style: .compact
+                        )
+                    } else if viewModel.majorTournaments.isEmpty == false {
                         tournamentSection(
                             title: String(localized: "tournament.section.major", defaultValue: "الميجر والبطولات العالمية"),
                             subtitle: String(localized: "tournament.section.major.sub", defaultValue: "شعارات، جوائز، ألعاب، ومعلومات تشغيلية من قاعدة البيانات"),
@@ -76,7 +90,9 @@ struct TournamentCenterView: View {
                 } label: {
                     FeaturedTournamentHeroCard(tournament: tournament, viewModel: viewModel)
                 }
-                .buttonStyle(PressScaleButtonStyle())
+                .buttonStyle(E360PressScale())
+            } else if viewModel.isLoading && viewModel.tournaments.isEmpty {
+                FeaturedTournamentHeroCardSkeleton()
             }
         }
         .padding(20)
@@ -123,7 +139,7 @@ struct TournamentCenterView: View {
                             TournamentCatalogCard(tournament: tournament, viewModel: viewModel, style: style)
                                 .frame(width: style == .featured ? 274 : 236)
                         }
-                        .buttonStyle(PressScaleButtonStyle())
+                        .buttonStyle(E360PressScale())
                     }
                 }
                 .padding(.horizontal, 2)
@@ -173,7 +189,7 @@ struct TournamentCenterView: View {
                         } label: {
                             TournamentListRow(tournament: tournament, viewModel: viewModel)
                         }
-                        .buttonStyle(PressScaleButtonStyle())
+                        .buttonStyle(E360PressScale())
                     }
                 }
             }
@@ -470,6 +486,77 @@ private struct TournamentSkeletonRow: View {
         }
         .padding(14)
         .background(E360Color.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct FeaturedTournamentHeroCardSkeleton: View {
+    var body: some View {
+        HStack(spacing: 14) {
+            SkeletonRow(width: 58, height: 58, cornerRadius: 14)
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 8) {
+                    SkeletonRow(width: 54, height: 16, cornerRadius: 8)
+                    SkeletonRow(width: 42, height: 12, cornerRadius: 6)
+                }
+                SkeletonRow(width: 150, height: 20, cornerRadius: 5)
+                SkeletonRow(width: 100, height: 14, cornerRadius: 4)
+            }
+            Spacer(minLength: 0)
+            VStack(alignment: .trailing, spacing: 6) {
+                SkeletonRow(width: 32, height: 10, cornerRadius: 3)
+                SkeletonRow(width: 54, height: 16, cornerRadius: 5)
+            }
+        }
+        .padding(14)
+        .background(E360Color.surface.opacity(0.76), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(E360Color.divider, lineWidth: 1))
+    }
+}
+
+private struct TournamentSectionSkeleton: View {
+    let title: String
+    let subtitle: String
+    let style: TournamentCardStyle
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionTitle(title: title, subtitle: subtitle)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 14) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        TournamentCatalogCardSkeleton(style: style)
+                            .frame(width: style == .featured ? 274 : 236)
+                    }
+                }
+                .padding(.horizontal, 2)
+            }
+        }
+    }
+}
+
+private struct TournamentCatalogCardSkeleton: View {
+    let style: TournamentCardStyle
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                SkeletonRow(width: style == .featured ? 58 : 48, height: style == .featured ? 58 : 48, cornerRadius: 14)
+                Spacer()
+                SkeletonRow(width: 54, height: 18, cornerRadius: 9)
+            }
+            VStack(alignment: .leading, spacing: 7) {
+                SkeletonRow(width: 180, height: 18, cornerRadius: 5)
+                SkeletonRow(width: 120, height: 14, cornerRadius: 4)
+            }
+            HStack(spacing: 8) {
+                SkeletonRow(width: 80, height: 26, cornerRadius: 10)
+                SkeletonRow(width: 60, height: 26, cornerRadius: 10)
+            }
+            SkeletonRow(width: 100, height: 12, cornerRadius: 4)
+        }
+        .padding(16)
+        .background(E360Color.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(E360Color.divider, lineWidth: 1))
     }
 }
 

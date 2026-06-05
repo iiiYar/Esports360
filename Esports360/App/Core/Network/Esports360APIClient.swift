@@ -17,6 +17,18 @@ actor Esports360APIClient {
         try await list(path: "v1/matches/today", limit: limit, forceRefresh: forceRefresh)
     }
 
+    func liveMatches(limit: Int = 50, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await list(path: "v1/matches/live", limit: limit, forceRefresh: forceRefresh)
+    }
+
+    func upcomingMatches(limit: Int = 20, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await list(path: "v1/matches/upcoming", limit: limit, forceRefresh: forceRefresh)
+    }
+
+    func recentMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await list(path: "v1/matches/recent", limit: limit, forceRefresh: forceRefresh)
+    }
+
     func match(id: String, forceRefresh: Bool = false) async throws -> BackendMatchDTO {
         let response: BackendItemResponse<BackendMatchDTO> = try await get(
             path: "v1/matches/\(id)",
@@ -31,8 +43,8 @@ actor Esports360APIClient {
     }
 
     // MARK: - Teams
-    func featuredTeams(limit: Int = 20) async throws -> [BackendTeamDTO] {
-        try await list(path: "v1/teams/featured", limit: limit)
+    func featuredTeams(limit: Int = 20, forceRefresh: Bool = false) async throws -> [BackendTeamDTO] {
+        try await list(path: "v1/teams/featured", limit: limit, forceRefresh: forceRefresh)
     }
 
     func teams(limit: Int = 50, offset: Int = 0, forceRefresh: Bool = false) async throws -> BackendListResponse<BackendTeamDTO> {
@@ -62,6 +74,14 @@ actor Esports360APIClient {
             forceRefresh: forceRefresh
         )
         return response.data
+    }
+
+    func tournamentMatches(id: String, limit: Int = 40, forceRefresh: Bool = false) async throws -> [BackendTournamentMatchDTO] {
+        try await list(path: "v1/tournaments/\(id)/matches", limit: limit, forceRefresh: forceRefresh)
+    }
+
+    func tournamentTeams(id: String, limit: Int = 40, forceRefresh: Bool = false) async throws -> [BackendTournamentTeamDTO] {
+        try await list(path: "v1/tournaments/\(id)/teams", limit: limit, forceRefresh: forceRefresh)
     }
 
     // MARK: - Discover

@@ -151,6 +151,12 @@
         "en" : { "stringUnit" : { "state" : "translated", "value" : "No live matches right now" } }
       }
     },
+    "home.emptyAlerts" : {
+      "localizations" : {
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "لا توجد تنبيهات مخصصة الآن" } },
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No personalized alerts right now" } }
+      }
+    },
     "home.emptyResults" : {
       "localizations" : {
         "ar" : { "stringUnit" : { "state" : "translated", "value" : "لم تنته أي مباريات بعد" } },
@@ -291,7 +297,7 @@
     },
     "match.firstHalfShort" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "H1 %@" } },
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الأول %@" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "H1 %@" } }
       }
     },
@@ -363,13 +369,13 @@
     },
     "match.secondHalfShort" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "H2 %@" } },
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "الثاني %@" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "H2 %@" } }
       }
     },
     "match.overtimeShort" : {
       "localizations" : {
-        "ar" : { "stringUnit" : { "state" : "translated", "value" : "OT %@" } },
+        "ar" : { "stringUnit" : { "state" : "translated", "value" : "إضافي %@" } },
         "en" : { "stringUnit" : { "state" : "translated", "value" : "OT %@" } }
       }
     },

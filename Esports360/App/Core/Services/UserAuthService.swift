@@ -109,7 +109,7 @@ class UserAuthService: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpRes = response as? HTTPURLResponse else {
             throw NSError(domain: "AuthService", code: 0,
-                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645")])
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "خطأ في الاتصال بالخادم")])
         }
 
         if httpRes.statusCode == 200 {
@@ -121,8 +121,8 @@ class UserAuthService: ObservableObject {
             struct ErrorResponse: Codable { let detail: String }
             let err = try? JSONDecoder().decode(ErrorResponse.self, from: data)
             let msg = err?.detail == "email_already_registered"
-                ? String(localized: "auth.error.emailExists",   defaultValue: "\u0647\u0630\u0627 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0645\u0633\u062c\u0644 \u0628\u0627\u0644\u0641\u0639\u0644")
-                : String(localized: "auth.error.signupFailed",  defaultValue: "\u0641\u0634\u0644 \u0627\u0644\u062a\u0633\u062c\u064a\u0644. \u064a\u0631\u062c\u0649 \u0627\u0644\u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0628\u0631\u064a\u062f \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631")
+                ? String(localized: "auth.error.emailExists",   defaultValue: "هذا البريد الإلكتروني مسجل بالفعل")
+                : String(localized: "auth.error.signupFailed",  defaultValue: "فشل التسجيل. يرجى التحقق من البريد وكلمة المرور")
             throw NSError(domain: "AuthService", code: httpRes.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
         }
     }
@@ -137,7 +137,7 @@ class UserAuthService: ObservableObject {
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let httpRes = response as? HTTPURLResponse else {
             throw NSError(domain: "AuthService", code: 0,
-                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645")])
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "خطأ في الاتصال بالخادم")])
         }
 
         if httpRes.statusCode == 200 {
@@ -148,7 +148,7 @@ class UserAuthService: ObservableObject {
         } else {
             throw NSError(domain: "AuthService", code: httpRes.statusCode,
                 userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.invalidCredentials",
-                    defaultValue: "\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0623\u0648 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629")])
+                    defaultValue: "البريد الإلكتروني أو كلمة المرور غير صحيحة")])
         }
     }
 
@@ -220,14 +220,14 @@ class UserAuthService: ObservableObject {
         let (_, response) = try await URLSession.shared.data(for: request)
         guard let httpRes = response as? HTTPURLResponse else {
             throw NSError(domain: "AuthService", code: 0,
-                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "\u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645")])
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.connection", defaultValue: "خطأ في الاتصال بالخادم")])
         }
         if httpRes.statusCode == 200 {
             await logout()
         } else {
             throw NSError(domain: "AuthService", code: httpRes.statusCode,
                 userInfo: [NSLocalizedDescriptionKey: String(localized: "auth.error.deleteAccountFailed",
-                    defaultValue: "\u0641\u0634\u0644 \u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628")])
+                    defaultValue: "فشل حذف الحساب")])
         }
     }
 

@@ -228,12 +228,13 @@ extension View {
 
 // MARK: - Skeleton Row
 struct SkeletonRow: View {
+    var width: CGFloat? = nil
     var height: CGFloat = 90
     var cornerRadius: CGFloat = 18
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(E360Color.surface)
-            .frame(maxWidth: .infinity).frame(height: height)
+            .frame(width: width, height: height)
             .e360Shimmer()
     }
 }

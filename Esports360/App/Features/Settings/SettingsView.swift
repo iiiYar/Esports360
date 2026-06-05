@@ -5,7 +5,7 @@ struct SettingsView: View {
     @AppStorage(AppStorageKeys.calendarIdentifier)    private var calendarIdentifier    = E360CalendarPreference.gregorian.rawValue
     @AppStorage(AppStorageKeys.backendBaseURL)        private var backendBaseURL        = E360Constants.defaultBackendBaseURL
     @AppStorage(AppStorageKeys.matchRemindersEnabled) private var matchRemindersEnabled = false
-    @AppStorage("app.hasCompletedOnboarding")         private var hasCompletedOnboarding = false
+    @AppStorage(AppStorageKeys.hasCompletedOnboarding) private var hasCompletedOnboarding = false
 
     @StateObject private var authService = UserAuthService.shared
     @State private var logoCacheSize: String = "..."

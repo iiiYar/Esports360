@@ -21,6 +21,18 @@ struct BackendMatchRepository: MatchRepository {
         let dto = try await apiClient.match(id: id, forceRefresh: forceRefresh)
         return await dto.toDomain(apiClient: apiClient)
     }
+
+    func liveMatches(limit: Int = 50, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await apiClient.liveMatches(limit: limit, forceRefresh: forceRefresh)
+    }
+
+    func upcomingMatches(limit: Int = 20, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await apiClient.upcomingMatches(limit: limit, forceRefresh: forceRefresh)
+    }
+
+    func recentMatches(limit: Int = 10, forceRefresh: Bool = false) async throws -> [BackendMatchDTO] {
+        try await apiClient.recentMatches(limit: limit, forceRefresh: forceRefresh)
+    }
 }
 
 // MARK: - Catalog Repository
@@ -44,8 +56,8 @@ struct BackendTeamRepository {
         self.apiClient = apiClient
     }
 
-    func featuredTeams() async throws -> [TeamProfile] {
-        let teams = try await apiClient.featuredTeams()
+    func featuredTeams(forceRefresh: Bool = false) async throws -> [TeamProfile] {
+        let teams = try await apiClient.featuredTeams(forceRefresh: forceRefresh)
         var profiles: [TeamProfile] = []
         for team in teams {
             profiles.append(try await teamProfile(id: team.id))

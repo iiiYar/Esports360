@@ -49,5 +49,16 @@
 		<string>ThmanyahSans-Bold.ttf</string>
 		<string>ThmanyahSans-Black.ttf</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.iyar.Esports360</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>esports360</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

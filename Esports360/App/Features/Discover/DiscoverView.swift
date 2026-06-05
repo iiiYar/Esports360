@@ -324,32 +324,6 @@ private final class DiscoverViewModel: ObservableObject {
     }
 }
 
-// MARK: - DiscoverFollowButton
-private struct DiscoverFollowButton: View {
-    let teamId: String
-    let teamName: String
-    let themeColor: Color
-    @State private var isFollowing = false
-    var body: some View {
-        Button {
-            isFollowing.toggle()
-            HapticManager.shared.triggerSelection()
-        } label: {
-            Text(isFollowing
-                ? String(localized: "team.following", defaultValue: "متابع")
-                : String(localized: "team.follow",    defaultValue: "تابع"))
-                .font(E360Font.body(11, weight: .black))
-                .foregroundStyle(isFollowing ? E360Color.textSecondary : .white)
-                .padding(.horizontal, 14).padding(.vertical, 7)
-                .background(
-                    isFollowing ? E360Color.elevatedSurface : themeColor,
-                    in: Capsule()
-                )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 // MARK: - Premium UI Components (unchanged)
 
 private struct DiscoverTournamentCard: View {
