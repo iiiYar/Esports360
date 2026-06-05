@@ -1,17 +1,16 @@
 import SwiftUI
 
-struct EmptySectionView: View {
-    let text: LocalizedStringKey
+// Legacy shim — kept for any callsites not yet migrated to E360EmptyState
+// TODO: Remove after Phase-4 screen updates
+typealias EmptySectionView = _LegacyEmptySectionView
 
+struct _LegacyEmptySectionView: View {
+    var title: String = "لا توجد بيانات"
+    var subtitle: String = ""
+    var icon: String = "tray"
     var body: some View {
-        Text(text)
-            .font(E360Font.body(14, weight: .medium))
-            .foregroundStyle(E360Color.textSecondary)
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(E360Color.surface, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(E360Color.divider, lineWidth: 1)
-            )
+        E360EmptyState(
+            style: .custom(icon: icon, title: title, subtitle: subtitle, iconColor: E360Color.textTertiary)
+        )
     }
 }

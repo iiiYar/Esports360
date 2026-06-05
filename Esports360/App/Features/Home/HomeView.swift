@@ -1,47 +1,67 @@
 import SwiftUI
+import Network
 
-// MARK: - HomeView — iOS 26 Redesign
-// Architecture: Stateless view — all state lives in HomeViewModel
-// UX: Hero match card, live pill strip, game filter chips, match feed
+// MARK: - HomeView — Phase-3 Redesign
+// ✔ Unified Design System: E360EmptyState / E360StatusBanner / E360SkeletonList / E360ChipGroup
+// ✔ Offline detection + sticky banner
+// ✔ NavigationStack removed (owned by AppRootView shell)
+// ✔ AppRoute typed navigation via NavigationLink(value:)
+// ✔ Pull-to-refresh preserved
 
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                E360Color.background.ignoresSafeArea()
-                E360AmbientGlow()
+        ZStack(alignment: .top) {
+            E360Color.background.ignoresSafeArea()
+            E360AmbientGlow()
 
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        // Hero header
-                        HomeHeroHeader(viewModel: viewModel)
-                            .padding(.bottom, 24)
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
 
-                        // Live now strip
-                        if !viewModel.liveMatches.isEmpty {
-                            HomeLiveStrip(matches: viewModel.liveMatches)
-                                .padding(.bottom, 24)
-                        }
+                    // ── Hero Header
+                    HomeHeroHeader(viewModel: viewModel)
+                        .padding(.bottom, 22)
 
-                        // Game filter chips
-                        HomeGameFilter(
-                            games: viewModel.availableGames,
-                            selected: $viewModel.selectedGameFilter
-                        )
-                        .padding(.bottom, 20)
-
-                        // Today's match feed
-                        HomeMatchFeed(viewModel: viewModel)
-                            .padding(.bottom, 100) // tab bar clearance
+                    // ── Offline banner (inline, not sticky)
+                    if viewModel.isOffline {
+                        E360StatusBanner(style: .offline)
+                            .padding(.horizontal, 18)
+                            .padding(.bottom, 16)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                     }
+
+                    // ── Error banner
+                    if let err = viewModel.error, !viewModel.isLoading {
+                        E360StatusBanner(style: .error(err), onDismiss: { viewModel.clearError() })
+                            .padding(.horizontal, 18)
+                            .padding(.bottom, 16)
+                            .transition(.opacity)
+                    }
+
+                    // ── Live strip
+                    if !viewModel.liveMatches.isEmpty {
+                        HomeLiveStrip(matches: viewModel.liveMatches)
+                            .padding(.bottom, 22)
+                    }
+
+                    // ── Game filter
+                    HomeGameFilter(
+                        games: viewModel.availableGames,
+                        selected: $viewModel.selectedGameFilter
+                    )
+                    .padding(.bottom, 18)
+
+                    // ── Match feed
+                    HomeMatchFeed(viewModel: viewModel)
+                        .padding(.bottom, 110) // tab bar clearance
                 }
-                .refreshable { await viewModel.refresh() }
             }
-            .navigationTitle("")
-            .navigationBarHidden(true)
+            .refreshable { await viewModel.refresh() }
+            .animation(.spring(response: 0.32, dampingFraction: 0.80), value: viewModel.isOffline)
+            .animation(.easeOut(duration: 0.22), value: viewModel.error)
         }
+        .task { await viewModel.initialLoad() }
     }
 }
 
@@ -51,47 +71,51 @@ private struct HomeHeroHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // App title row
+
+            // Title row
             HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(String(localized: "home.greeting", defaultValue: "مرحباً ✨"))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("home.greeting", defaultValue: "مرحباً ✨")
                         .font(E360Font.body(14, weight: .medium))
                         .foregroundStyle(E360Color.textSecondary)
-                    Text(String(localized: "home.title", defaultValue: "الرياضة الإلكترونية"))
+                    Text("home.title", defaultValue: "الرياضة الإلكترونية")
                         .font(E360Font.display(28, weight: .black))
                         .foregroundStyle(E360Color.textPrimary)
                 }
                 Spacer()
+
                 // Live count badge
-                if viewModel.liveMatches.isEmpty == false {
+                if !viewModel.liveMatches.isEmpty {
                     HStack(spacing: 6) {
                         E360LivePulse(size: 6)
-                        Text(String(
-                            format: String(localized: "home.liveCount", defaultValue: "%@ مباشر"),
-                            "\(viewModel.liveMatches.count)"
-                        ))
-                        .font(E360Font.mono(11, weight: .bold))
-                        .foregroundStyle(E360Color.live)
+                        Text("\(viewModel.liveMatches.count) مباشر")
+                            .font(E360Font.mono(11, weight: .bold))
+                            .foregroundStyle(E360Color.live)
                     }
                     .padding(.horizontal, 12).padding(.vertical, 7)
                     .background(E360Color.liveGlow, in: Capsule())
-                    .overlay(Capsule().stroke(E360Color.live.opacity(0.3), lineWidth: 1))
+                    .overlay(Capsule().stroke(E360Color.live.opacity(0.30), lineWidth: 1))
+                    .transition(.scale.combined(with: .opacity))
+                    .animation(.spring(response: 0.30, dampingFraction: 0.75), value: viewModel.liveMatches.count)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
 
-            // Hero Featured Match
-            if viewModel.isLoading {
-                SkeletonRow(height: 190, cornerRadius: 28)
+            // Featured hero card
+            Group {
+                if viewModel.isLoading {
+                    E360SkeletonView(type: .heroCard)
+                        .padding(.horizontal, 16)
+                } else if let featured = viewModel.featuredMatch {
+                    NavigationLink(value: AppRoute.match(id: featured.id)) {
+                        HomeFeaturedMatchCard(match: featured)
+                    }
+                    .buttonStyle(E360PressScale(scale: 0.97))
                     .padding(.horizontal, 16)
-            } else if let featured = viewModel.featuredMatch {
-                NavigationLink(destination: MatchDetailContainerView(matchID: featured.id)) {
-                    HomeFeaturedMatchCard(match: featured)
                 }
-                .buttonStyle(E360PressScale(scale: 0.97))
-                .padding(.horizontal, 16)
             }
+            .animation(.easeOut(duration: 0.24), value: viewModel.isLoading)
         }
     }
 }
@@ -99,22 +123,22 @@ private struct HomeHeroHeader: View {
 // MARK: - Featured Hero Card
 struct HomeFeaturedMatchCard: View {
     let match: BackendMatchDTO
-    @State private var shimmer = false
 
-    private var esportsGame: EsportsGame { EsportsGame(backendCode: match.gameCode) }
-    private var theme: Color { esportsGame.themeColor }
-    private var isLive: Bool { match.status == "running" }
+    private var game: EsportsGame  { EsportsGame(backendCode: match.gameCode) }
+    private var theme: Color        { game.themeColor }
+    private var isLive: Bool        { match.status == "running" }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Game strip
+
+            // Top strip
             HStack {
-                E360Badge(text: esportsGame.shortName, color: theme)
+                E360Badge(text: game.shortName, color: theme)
                 Spacer()
                 if isLive {
                     HStack(spacing: 5) {
                         E360LivePulse(size: 5)
-                        Text(String(localized: "match.live", defaultValue: "مباشر الآن"))
+                        Text("مباشر الآن")
                             .font(E360Font.mono(10, weight: .black))
                             .foregroundStyle(E360Color.live)
                     }
@@ -126,17 +150,17 @@ struct HomeFeaturedMatchCard: View {
             }
             .padding(.horizontal, 18).padding(.top, 16).padding(.bottom, 12)
 
-            // Teams vs
+            // Teams
             HStack(spacing: 0) {
-                // Team 1
-                teamSide(name: match.team1Name, imageURL: BackendURLResolver.resolveBackendURL(match.team1ImageUrl), score: match.team1Score, align: .leading)
-
-                // VS separator
-                E360VsSeparator()
-                    .padding(.horizontal, 12)
-
-                // Team 2
-                teamSide(name: match.team2Name, imageURL: BackendURLResolver.resolveBackendURL(match.team2ImageUrl), score: match.team2Score, align: .trailing)
+                teamSide(name: match.team1Name,
+                         imageURL: BackendURLResolver.resolveBackendURL(match.team1ImageUrl),
+                         score: match.team1Score,
+                         align: .leading)
+                E360VsSeparator().padding(.horizontal, 12)
+                teamSide(name: match.team2Name,
+                         imageURL: BackendURLResolver.resolveBackendURL(match.team2ImageUrl),
+                         score: match.team2Score,
+                         align: .trailing)
                     .environment(\.layoutDirection, .leftToRight)
             }
             .padding(.horizontal, 18).padding(.bottom, 16)
@@ -156,8 +180,7 @@ struct HomeFeaturedMatchCard: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(E360Color.textTertiary)
                 }
-                .padding(.horizontal, 18).padding(.bottom, 14)
-                .padding(.top, 2)
+                .padding(.horizontal, 18).padding(.bottom, 14).padding(.top, 2)
             }
         }
         .frame(maxWidth: .infinity)
@@ -169,25 +192,26 @@ struct HomeFeaturedMatchCard: View {
                         colors: [theme.opacity(0.13), theme.opacity(0.03), .clear],
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     ))
-                if isLive {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(E360Color.live.opacity(0.30), lineWidth: 1.5)
-                } else {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(LinearGradient(
-                            colors: [theme.opacity(0.35), E360Color.divider],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ), lineWidth: 1)
-                }
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(
+                        isLive
+                            ? LinearGradient(colors: [E360Color.live.opacity(0.50), E360Color.live.opacity(0.15)],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [theme.opacity(0.35), E360Color.divider],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: isLive ? 1.5 : 1.0
+                    )
             }
         }
-        .shadow(color: theme.opacity(isLive ? 0.20 : 0.08), radius: isLive ? 18 : 10, y: 8)
+        .shadow(color: theme.opacity(isLive ? 0.22 : 0.08), radius: isLive ? 20 : 10, y: 8)
     }
 
     @ViewBuilder
     private func teamSide(name: String?, imageURL: URL?, score: Int?, align: HorizontalAlignment) -> some View {
         VStack(alignment: align, spacing: 8) {
-            ESImageView(url: imageURL, fallbackAsset: E360ImageAsset.teamPlaceholder, fallbackText: name ?? "")
+            ESImageView(url: imageURL,
+                        fallbackAsset: E360ImageAsset.teamPlaceholder,
+                        fallbackText: name ?? "")
                 .frame(width: 54, height: 54)
                 .clipShape(Circle())
                 .shadow(color: theme.opacity(0.25), radius: 8)
@@ -195,8 +219,7 @@ struct HomeFeaturedMatchCard: View {
             Text(name ?? "-")
                 .font(E360Font.body(13, weight: .bold))
                 .foregroundStyle(E360Color.textPrimary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .lineLimit(1).minimumScaleFactor(0.8)
                 .frame(maxWidth: 100)
 
             if let score {
@@ -213,7 +236,7 @@ struct HomeFeaturedMatchCard: View {
     }
 }
 
-// MARK: - Live Now Strip
+// MARK: - Live Strip
 private struct HomeLiveStrip: View {
     let matches: [BackendMatchDTO]
 
@@ -221,15 +244,16 @@ private struct HomeLiveStrip: View {
         VStack(alignment: .leading, spacing: 12) {
             E360SectionHeader(
                 title: "home.liveNow",
-                badge: "\(matches.count)",
-                badgeColor: E360Color.live
+                icon: "dot.radiowaves.left.and.right",
+                iconColor: E360Color.live,
+                liveCount: matches.count
             )
             .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(matches, id: \.id) { match in
-                        NavigationLink(destination: MatchDetailContainerView(matchID: match.id)) {
+                        NavigationLink(value: AppRoute.match(id: match.id)) {
                             LiveMatchPill(match: match)
                         }
                         .buttonStyle(E360PressScale())
@@ -248,17 +272,20 @@ private struct LiveMatchPill: View {
     var body: some View {
         HStack(spacing: 10) {
             ESImageView(url: BackendURLResolver.resolveBackendURL(match.team1ImageUrl),
-                        fallbackAsset: E360ImageAsset.teamPlaceholder, fallbackText: match.team1Name ?? "")
+                        fallbackAsset: E360ImageAsset.teamPlaceholder,
+                        fallbackText: match.team1Name ?? "")
                 .frame(width: 28, height: 28).clipShape(Circle())
 
-            VStack(spacing: 1) {
+            VStack(spacing: 2) {
                 Text("\(match.team1Score ?? 0) : \(match.team2Score ?? 0)")
-                    .font(E360Font.mono(14, weight: .black)).foregroundStyle(E360Color.textPrimary)
+                    .font(E360Font.mono(14, weight: .black))
+                    .foregroundStyle(E360Color.textPrimary)
                 E360LivePulse(size: 4)
             }
 
             ESImageView(url: BackendURLResolver.resolveBackendURL(match.team2ImageUrl),
-                        fallbackAsset: E360ImageAsset.teamPlaceholder, fallbackText: match.team2Name ?? "")
+                        fallbackAsset: E360ImageAsset.teamPlaceholder,
+                        fallbackText: match.team2Name ?? "")
                 .frame(width: 28, height: 28).clipShape(Circle())
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
@@ -268,7 +295,7 @@ private struct LiveMatchPill: View {
     }
 }
 
-// MARK: - Game Filter Chips
+// MARK: - Game Filter — uses new E360ChipGroup
 private struct HomeGameFilter: View {
     let games: [EsportsGame]
     @Binding var selected: EsportsGame?
@@ -276,38 +303,43 @@ private struct HomeGameFilter: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                // All chip
-                gameChip(title: String(localized: "home.filter.all", defaultValue: "الكل"),
-                         color: E360Color.accent, isSelected: selected == nil) {
+                // "All" manual chip
+                Button {
+                    HapticManager.shared.triggerSelection()
                     withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) { selected = nil }
+                } label: {
+                    Label("الكل", systemImage: "square.grid.2x2")
+                        .font(E360Font.rounded(12, weight: selected == nil ? .black : .semibold))
+                        .foregroundStyle(selected == nil ? .black : E360Color.textSecondary)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(selected == nil ? E360Color.accent : E360Color.tintedSurface, in: Capsule())
+                        .overlay(Capsule().stroke(selected == nil ? .clear : E360Color.divider, lineWidth: 1))
                 }
+                .buttonStyle(E360PressScale(scale: 0.94))
+                .animation(.spring(response: 0.25, dampingFraction: 0.72), value: selected == nil)
+
+                // Per-game chips
                 ForEach(games, id: \.self) { game in
-                    gameChip(title: game.shortName, color: game.themeColor, isSelected: selected == game) {
+                    let isSel = selected == game
+                    Button {
+                        HapticManager.shared.triggerSelection()
                         withAnimation(.spring(response: 0.28, dampingFraction: 0.72)) {
-                            selected = (selected == game) ? nil : game
+                            selected = isSel ? nil : game
                         }
+                    } label: {
+                        Text(game.shortName)
+                            .font(E360Font.rounded(12, weight: isSel ? .black : .semibold))
+                            .foregroundStyle(isSel ? .black : E360Color.textSecondary)
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .background(isSel ? game.themeColor : E360Color.tintedSurface, in: Capsule())
+                            .overlay(Capsule().stroke(isSel ? .clear : E360Color.divider, lineWidth: 1))
                     }
+                    .buttonStyle(E360PressScale(scale: 0.94))
+                    .animation(.spring(response: 0.25, dampingFraction: 0.72), value: isSel)
                 }
             }
             .padding(.horizontal, 20)
         }
-    }
-
-    @ViewBuilder
-    private func gameChip(title: String, color: Color, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: { HapticManager.shared.triggerSelection(); action() }) {
-            Text(title)
-                .font(E360Font.rounded(12, weight: isSelected ? .black : .semibold))
-                .foregroundStyle(isSelected ? .black : E360Color.textSecondary)
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(
-                    isSelected ? color : E360Color.tintedSurface,
-                    in: Capsule()
-                )
-                .overlay(Capsule().stroke(isSelected ? .clear : E360Color.divider, lineWidth: 1))
-        }
-        .buttonStyle(.plain)
-        .animation(.spring(response: 0.25, dampingFraction: 0.72), value: isSelected)
     }
 }
 
@@ -317,33 +349,41 @@ private struct HomeMatchFeed: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Section header
+
             E360SectionHeader(
                 title: "home.today",
                 subtitle: "home.today.subtitle",
-                badge: viewModel.filteredMatches.isEmpty ? nil : "\(viewModel.filteredMatches.count)"
+                badge: viewModel.filteredMatches.isEmpty ? nil : "\(viewModel.filteredMatches.count)",
+                icon: "calendar",
+                iconColor: E360Color.accent
             )
             .padding(.horizontal, 20)
 
+            // ── Loading
             if viewModel.isLoading {
-                VStack(spacing: 10) {
-                    ForEach(0..<5, id: \.self) { _ in
-                        SkeletonRow(height: 108, cornerRadius: 22)
-                    }
-                }
-                .padding(.horizontal, 16)
-            } else if let error = viewModel.error {
-                HomeErrorBanner(message: error) {
-                    Task { await viewModel.refresh() }
-                }
-                .padding(.horizontal, 16)
-            } else if viewModel.filteredMatches.isEmpty {
-                HomeEmptyState()
+                E360SkeletonList(type: .matchCard, count: 5)
                     .padding(.horizontal, 16)
+
+            // ── Empty
+            } else if viewModel.filteredMatches.isEmpty {
+                E360EmptyState(
+                    style: viewModel.selectedGameFilter != nil
+                        ? .noResults(query: viewModel.selectedGameFilter?.shortName ?? "")
+                        : .noMatches,
+                    onAction: viewModel.selectedGameFilter != nil
+                        ? { withAnimation { viewModel.selectedGameFilter = nil } }
+                        : nil,
+                    actionLabel: viewModel.selectedGameFilter != nil
+                        ? "عرض كل المباريات"
+                        : nil
+                )
+                .padding(.horizontal, 16)
+
+            // ── Content
             } else {
                 LazyVStack(spacing: 10) {
                     ForEach(viewModel.filteredMatches, id: \.id) { match in
-                        NavigationLink(destination: MatchDetailContainerView(matchID: match.id)) {
+                        NavigationLink(value: AppRoute.match(id: match.id)) {
                             HomeMatchRow(match: match)
                         }
                         .buttonStyle(E360PressScale())
@@ -352,32 +392,30 @@ private struct HomeMatchFeed: View {
                 .padding(.horizontal, 16)
             }
         }
+        .animation(.easeOut(duration: 0.22), value: viewModel.isLoading)
+        .animation(.easeOut(duration: 0.22), value: viewModel.filteredMatches.count)
     }
 }
 
 // MARK: - Match Row Card
 struct HomeMatchRow: View {
     let match: BackendMatchDTO
-    private var game: EsportsGame { EsportsGame(backendCode: match.gameCode) }
-    private var theme: Color { game.themeColor }
-    private var isLive: Bool { match.status == "running" }
+    private var game: EsportsGame  { EsportsGame(backendCode: match.gameCode) }
+    private var theme: Color        { game.themeColor }
+    private var isLive: Bool        { match.status == "running" }
 
     var body: some View {
         HStack(spacing: 14) {
-            // Team 1
-            matchTeam(
-                name: match.team1Name,
-                url: BackendURLResolver.resolveBackendURL(match.team1ImageUrl),
-                score: match.team1Score,
-                align: .trailing
-            )
+            matchTeam(name: match.team1Name,
+                      url: BackendURLResolver.resolveBackendURL(match.team1ImageUrl),
+                      score: match.team1Score, align: .trailing)
 
-            // Center info
+            // Center
             VStack(spacing: 6) {
                 if isLive {
                     HStack(spacing: 4) {
                         E360LivePulse(size: 5)
-                        Text(String(localized: "match.live", defaultValue: "مباشر"))
+                        Text("مباشر")
                             .font(E360Font.mono(9, weight: .black))
                             .foregroundStyle(E360Color.live)
                     }
@@ -392,13 +430,9 @@ struct HomeMatchRow: View {
             }
             .frame(width: 80)
 
-            // Team 2
-            matchTeam(
-                name: match.team2Name,
-                url: BackendURLResolver.resolveBackendURL(match.team2ImageUrl),
-                score: match.team2Score,
-                align: .leading
-            )
+            matchTeam(name: match.team2Name,
+                      url: BackendURLResolver.resolveBackendURL(match.team2ImageUrl),
+                      score: match.team2Score, align: .leading)
         }
         .padding(.horizontal, 16).padding(.vertical, 14)
         .frame(maxWidth: .infinity)
@@ -426,51 +460,13 @@ struct HomeMatchRow: View {
         Text(name ?? "-")
             .font(E360Font.body(12, weight: .bold))
             .foregroundStyle(E360Color.textPrimary)
-            .lineLimit(2).multilineTextAlignment(align == .trailing ? .trailing : .leading)
+            .lineLimit(2)
+            .multilineTextAlignment(align == .trailing ? .trailing : .leading)
             .frame(maxWidth: 80)
         if let score {
             Text("\(score)")
                 .font(E360Font.number(18, weight: .black))
                 .foregroundStyle(isLive ? E360Color.live : E360Color.textPrimary)
         }
-    }
-}
-
-// MARK: - Error & Empty
-private struct HomeErrorBanner: View {
-    let message: String
-    let retry: () -> Void
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "wifi.exclamationmark")
-                .font(.system(size: 18, weight: .bold)).foregroundStyle(E360Color.warning)
-            Text(message)
-                .font(E360Font.body(13, weight: .medium)).foregroundStyle(E360Color.textSecondary)
-                .lineLimit(2)
-            Spacer()
-            Button(action: retry) {
-                Text(String(localized: "common.retry", defaultValue: "إعادة"))
-                    .font(E360Font.body(12, weight: .black)).foregroundStyle(.white)
-                    .padding(.horizontal, 12).padding(.vertical, 7)
-                    .background(E360Color.primary, in: Capsule())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(16)
-        .e360GlassCard(cornerRadius: 18, tintColor: E360Color.warning)
-    }
-}
-
-private struct HomeEmptyState: View {
-    var body: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "calendar.badge.clock")
-                .font(.system(size: 40, weight: .light)).foregroundStyle(E360Color.textTertiary)
-            Text(String(localized: "home.empty.title", defaultValue: "لا توجد مباريات اليوم"))
-                .font(E360Font.body(15, weight: .bold)).foregroundStyle(E360Color.textSecondary)
-            Text(String(localized: "home.empty.subtitle", defaultValue: "تحقق لاحقاً أو اسحب للتحديث"))
-                .font(E360Font.body(13, weight: .medium)).foregroundStyle(E360Color.textTertiary)
-        }
-        .frame(maxWidth: .infinity).padding(.vertical, 48)
     }
 }

@@ -1,18 +1,21 @@
 import Foundation
 import OSLog
 import Combine
+import Network
 
-// MARK: - HomeViewModel — iOS 26 refresh
+// MARK: - HomeViewModel — Phase-3
+// Added: isOffline state via NWPathMonitor, clearError()
 @MainActor
 final class HomeViewModel: ObservableObject {
     private static let logger = Logger(subsystem: "com.esports360", category: "HomeViewModel")
 
-    // ── Published State
+    // ── Published state
     @Published private(set) var liveMatches:     [BackendMatchDTO] = []
     @Published private(set) var upcomingMatches: [BackendMatchDTO] = []
     @Published private(set) var recentMatches:   [BackendMatchDTO] = []
     @Published private(set) var availableGames:  [EsportsGame]    = []
     @Published private(set) var isLoading  = false
+    @Published private(set) var isOffline  = false
     @Published private(set) var error: String? = nil
     @Published var selectedGameFilter: EsportsGame? = nil
 
@@ -29,12 +32,15 @@ final class HomeViewModel: ObservableObject {
 
     // ── Dependencies
     private let repository: MatchRepositoryProtocol
+    private let monitor = NWPathMonitor()
+    private let monitorQueue = DispatchQueue(label: "com.esports360.network")
 
     init(repository: MatchRepositoryProtocol) {
         self.repository = repository
+        startNetworkMonitor()
     }
 
-    // ── Load
+    // ── Public
     func initialLoad() async {
         guard !isLoading else { return }
         await load(forceRefresh: false)
@@ -44,6 +50,11 @@ final class HomeViewModel: ObservableObject {
         await load(forceRefresh: true)
     }
 
+    func clearError() {
+        error = nil
+    }
+
+    // ── Private
     private func load(forceRefresh: Bool) async {
         isLoading = true
         error = nil
@@ -52,7 +63,6 @@ final class HomeViewModel: ObservableObject {
             async let live     = repository.liveMatches(forceRefresh: forceRefresh)
             async let upcoming = repository.upcomingMatches(limit: 20, forceRefresh: forceRefresh)
             async let recent   = repository.recentMatches(limit: 10, forceRefresh: forceRefresh)
-
             let (l, u, r) = try await (live, upcoming, recent)
             liveMatches     = l
             upcomingMatches = u
@@ -68,4 +78,17 @@ final class HomeViewModel: ObservableObject {
         let games = Set(matches.map { EsportsGame(backendCode: $0.gameCode) }).subtracting([.unknown])
         availableGames = EsportsGame.allCases.filter { games.contains($0) && $0 != .unknown }
     }
+
+    private func startNetworkMonitor() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            Task { @MainActor [weak self] in
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.80)) {
+                    self?.isOffline = path.status != .satisfied
+                }
+            }
+        }
+        monitor.start(queue: monitorQueue)
+    }
+
+    deinit { monitor.cancel() }
 }
