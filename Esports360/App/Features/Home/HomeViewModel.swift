@@ -65,39 +65,58 @@ final class HomeViewModel: ObservableObject {
         async let upcomingTask = repository.upcomingMatches(limit: 20, forceRefresh: forceRefresh)
         async let recentTask   = repository.recentMatches(limit: 10, forceRefresh: forceRefresh)
 
-        let l: [BackendMatchDTO]
         do {
-            l = try await liveTask
+            let l = try await liveTask
+            let u = try await upcomingTask
+            let r = try await recentTask
+            
+            // Success: update all lists
+            self.liveMatches     = l
+            self.upcomingMatches = u
+            self.recentMatches   = r
+            buildGameFilter(from: l + u + r)
         } catch {
-            l = []
-            self.error = error.localizedDescription
-            Self.logger.error("HomeViewModel failed to load live matches: \(error)")
-        }
+            // If the task was cancelled, exit immediately without clearing lists or showing error banners
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                Self.logger.info("HomeViewModel load task cancelled.")
+                return
+            }
 
-        let u: [BackendMatchDTO]
-        do {
-            u = try await upcomingTask
-        } catch {
-            u = []
-            self.error = error.localizedDescription
-            Self.logger.error("HomeViewModel failed to load upcoming matches: \(error)")
+            Self.logger.error("HomeViewModel parallel load failed, falling back to individual queries: \(error)")
+            await loadGracefully(forceRefresh: forceRefresh)
         }
+    }
 
-        let r: [BackendMatchDTO]
+    private func loadGracefully(forceRefresh: Bool) async {
         do {
-            r = try await recentTask
+            let l = try await repository.liveMatches(forceRefresh: forceRefresh)
+            self.liveMatches = l
         } catch {
-            r = []
-            if self.error == nil {
+            if !Task.isCancelled && (error as? URLError)?.code != .cancelled {
                 self.error = error.localizedDescription
             }
-            Self.logger.error("HomeViewModel failed to load recent matches: \(error)")
+            Self.logger.error("HomeViewModel loadGracefully failed live: \(error)")
         }
 
-        self.liveMatches     = l
-        self.upcomingMatches = u
-        self.recentMatches   = r
-        buildGameFilter(from: l + u + r)
+        do {
+            let u = try await repository.upcomingMatches(limit: 20, forceRefresh: forceRefresh)
+            self.upcomingMatches = u
+        } catch {
+            if !Task.isCancelled && (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
+            Self.logger.error("HomeViewModel loadGracefully failed upcoming: \(error)")
+        }
+
+        do {
+            let r = try await repository.recentMatches(limit: 10, forceRefresh: forceRefresh)
+            self.recentMatches = r
+        } catch {
+            // Log but don't show error banners for recent matches
+            Self.logger.error("HomeViewModel loadGracefully failed recent: \(error)")
+        }
+
+        buildGameFilter(from: self.liveMatches + self.upcomingMatches + self.recentMatches)
     }
 
     private func buildGameFilter(from matches: [BackendMatchDTO]) {
