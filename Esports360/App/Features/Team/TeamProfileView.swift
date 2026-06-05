@@ -98,7 +98,14 @@ struct TeamProfileView: View {
             )
 
             if profile.roster.isEmpty {
-                EmptySectionView(text: "team.emptyRoster")
+                E360EmptyState(
+                    style: .custom(
+                        icon: "person.3",
+                        title: String(localized: "team.emptyRoster", defaultValue: "لا يوجد لاعبون في القائمة"),
+                        subtitle: "",
+                        iconColor: E360Color.textTertiary
+                    )
+                )
             } else {
                 LazyVGrid(columns: rosterColumns, spacing: 10) {
                     ForEach(profile.roster) { player in

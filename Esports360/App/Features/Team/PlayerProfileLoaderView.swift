@@ -17,7 +17,8 @@ struct PlayerProfileLoaderView: View {
         Group {
             if isLoading {
                 VStack(spacing: 20) {
-                    E360SkeletonList(type: .playerCard, count: 2)
+                    E360SkeletonView(type: .profileHeader)
+                    E360SkeletonList(type: .teamRow, count: 2)
                     Spacer()
                 }
                 .padding(18)

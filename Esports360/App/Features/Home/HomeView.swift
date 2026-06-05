@@ -75,10 +75,10 @@ private struct HomeHeroHeader: View {
             // Title row
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("home.greeting", defaultValue: "مرحباً ✨")
+                    Text(String(localized: "home.greeting", defaultValue: "مرحباً ✨"))
                         .font(E360Font.body(14, weight: .medium))
                         .foregroundStyle(E360Color.textSecondary)
-                    Text("home.title", defaultValue: "الرياضة الإلكترونية")
+                    Text(String(localized: "home.title", defaultValue: "الرياضة الإلكترونية"))
                         .font(E360Font.display(28, weight: .black))
                         .foregroundStyle(E360Color.textPrimary)
                 }

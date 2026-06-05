@@ -98,12 +98,12 @@ struct TournamentCenterView: View {
                     viewModel: viewModel, size: 74
                 )
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("tab.tournaments", defaultValue: "البطولات")
+                    Text(String(localized: "tab.tournaments", defaultValue: "البطولات"))
                         .font(E360Font.display(34, weight: .black))
                         .foregroundStyle(E360Color.textPrimary)
                         .lineLimit(1)
-                    Text("tournament.hero.subtitle",
-                         defaultValue: "مركز واحد للميجر، بطولات العالم، EWC، والبطولات النشطة في كل لعبة.")
+                    Text(String(localized: "tournament.hero.subtitle",
+                         defaultValue: "مركز واحد للميجر، بطولات العالم، EWC، والبطولات النشطة في كل لعبة."))
                         .font(E360Font.body(13, weight: .semibold))
                         .foregroundStyle(E360Color.textSecondary)
                         .lineLimit(3)

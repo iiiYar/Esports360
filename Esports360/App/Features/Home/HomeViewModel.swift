@@ -2,6 +2,7 @@ import Foundation
 import OSLog
 import Combine
 import Network
+import SwiftUI
 
 // MARK: - HomeViewModel — Phase-3
 // Added: isOffline state via NWPathMonitor, clearError()

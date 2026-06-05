@@ -235,7 +235,14 @@ private struct TeamRosterDirectorySection: View {
                     .background(E360Color.surface, in: Capsule())
             }
             if roster.isEmpty {
-                EmptySectionView(text: "team.emptyRoster")
+                E360EmptyState(
+                    style: .custom(
+                        icon: "person.3",
+                        title: String(localized: "team.emptyRoster", defaultValue: "لا يوجد لاعبون في القائمة"),
+                        subtitle: "",
+                        iconColor: E360Color.textTertiary
+                    )
+                )
             } else {
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(roster, id: \.id) { player in

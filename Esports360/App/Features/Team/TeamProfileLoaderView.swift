@@ -19,7 +19,7 @@ struct TeamProfileLoaderView: View {
         Group {
             if isLoading {
                 VStack(spacing: 20) {
-                    E360SkeletonList(type: .teamCard, count: 3)
+                    E360SkeletonList(type: .teamRow, count: 3)
                     Spacer()
                 }
                 .padding(18)

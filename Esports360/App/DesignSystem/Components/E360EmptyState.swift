@@ -44,7 +44,7 @@ enum E360EmptyStateStyle {
     var title: String {
         switch self {
         case .noMatches:         return String(localized: "empty.noMatches.title",         defaultValue: "لا توجد مباريات")
-        case .noResults(let q):  return String(localized: "empty.noResults.title",         defaultValue: "\u0644\u0627 \u0646\u062a\u0627\u0626\u062c \u0644\u0640 \"\(q)\"")
+        case .noResults(let q):  return String(localized: "empty.noResults.title",         defaultValue: "لا نتائج لـ \"\(q)\"")
         case .noTournaments:     return String(localized: "empty.noTournaments.title",     defaultValue: "لا توجد بطولات")
         case .noTeams:           return String(localized: "empty.noTeams.title",           defaultValue: "لا توجد فرق")
         case .noFavorites:       return String(localized: "empty.noFavorites.title",       defaultValue: "لا يوجد مفضلات")
@@ -57,7 +57,7 @@ enum E360EmptyStateStyle {
     var subtitle: String {
         switch self {
         case .noMatches:         return String(localized: "empty.noMatches.sub",      defaultValue: "جرّب يومًا آخر أو غيّر فلتر اللعبة")
-        case .noResults(let q):  return String(localized: "empty.noResults.sub",      defaultValue: "\u062c\u0631\u0651\u0628 \u0643\u0644\u0645\u0629 \u0623\u062e\u0631\u0649 \u0628\u062f\u0644\u0627\u064b \u0645\u0646 \"\(q)\"")
+        case .noResults(let q):  return String(localized: "empty.noResults.sub",      defaultValue: "جرّب كلمة أخرى بدلاً من \"\(q)\"")
         case .noTournaments:     return String(localized: "empty.noTournaments.sub",  defaultValue: "تابع التحديثات لمعرفة أحدث البطولات")
         case .noTeams:           return String(localized: "empty.noTeams.sub",        defaultValue: "ابحث عن فرقك المفضلة في قسم اكتشف")
         case .noFavorites:       return String(localized: "empty.noFavorites.sub",    defaultValue: "اتبع فرقًا وبطولات لتراها هنا")
