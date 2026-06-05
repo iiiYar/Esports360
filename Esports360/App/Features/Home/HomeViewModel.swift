@@ -60,19 +60,44 @@ final class HomeViewModel: ObservableObject {
         isLoading = true
         error = nil
         defer { isLoading = false }
+
+        async let liveTask     = repository.liveMatches(forceRefresh: forceRefresh)
+        async let upcomingTask = repository.upcomingMatches(limit: 20, forceRefresh: forceRefresh)
+        async let recentTask   = repository.recentMatches(limit: 10, forceRefresh: forceRefresh)
+
+        let l: [BackendMatchDTO]
         do {
-            async let live     = repository.liveMatches(forceRefresh: forceRefresh)
-            async let upcoming = repository.upcomingMatches(limit: 20, forceRefresh: forceRefresh)
-            async let recent   = repository.recentMatches(limit: 10, forceRefresh: forceRefresh)
-            let (l, u, r) = try await (live, upcoming, recent)
-            liveMatches     = l
-            upcomingMatches = u
-            recentMatches   = r
-            buildGameFilter(from: l + u + r)
+            l = try await liveTask
         } catch {
+            l = []
             self.error = error.localizedDescription
-            Self.logger.error("HomeViewModel load failed: \(error)")
+            Self.logger.error("HomeViewModel failed to load live matches: \(error)")
         }
+
+        let u: [BackendMatchDTO]
+        do {
+            u = try await upcomingTask
+        } catch {
+            u = []
+            self.error = error.localizedDescription
+            Self.logger.error("HomeViewModel failed to load upcoming matches: \(error)")
+        }
+
+        let r: [BackendMatchDTO]
+        do {
+            r = try await recentTask
+        } catch {
+            r = []
+            if self.error == nil {
+                self.error = error.localizedDescription
+            }
+            Self.logger.error("HomeViewModel failed to load recent matches: \(error)")
+        }
+
+        self.liveMatches     = l
+        self.upcomingMatches = u
+        self.recentMatches   = r
+        buildGameFilter(from: l + u + r)
     }
 
     private func buildGameFilter(from matches: [BackendMatchDTO]) {
