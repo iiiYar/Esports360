@@ -1,9 +1,9 @@
 import SwiftUI
 import OSLog
 
-// MARK: - Static Onboarding Teams (replaces MockEsportsData)
+// MARK: - Static Onboarding Teams
 private struct OnboardingTeamItem: Identifiable {
-    let id: String          // backend team ID
+    let id: String
     let name: String
     let shortName: String?
     let imageUrl: String?
@@ -13,29 +13,33 @@ private struct OnboardingTeamItem: Identifiable {
 }
 
 private let onboardingTeams: [OnboardingTeamItem] = [
-    OnboardingTeamItem(id: "falcons",       name: "Team Falcons",    shortName: "FAL",  imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "lol"),
-    OnboardingTeamItem(id: "twisted-minds", name: "Twisted Minds",   shortName: "TM",   imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "val"),
-    OnboardingTeamItem(id: "nasr",          name: "Nasr Esports",    shortName: "NASR", imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "cs"),
-    OnboardingTeamItem(id: "g2",            name: "G2 Esports",      shortName: "G2",   imageUrl: nil, isSaudi: false, countryCode: "EU", gameCode: "lol"),
-    OnboardingTeamItem(id: "vitality",      name: "Team Vitality",   shortName: "VIT",  imageUrl: nil, isSaudi: false, countryCode: "FR", gameCode: "cs"),
-    OnboardingTeamItem(id: "liquid",        name: "Team Liquid",     shortName: "TL",   imageUrl: nil, isSaudi: false, countryCode: "US", gameCode: "lol")
+    OnboardingTeamItem(id: "falcons",       name: "Team Falcons",  shortName: "FAL",  imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "lol"),
+    OnboardingTeamItem(id: "twisted-minds", name: "Twisted Minds", shortName: "TM",   imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "val"),
+    OnboardingTeamItem(id: "nasr",          name: "Nasr Esports",  shortName: "NASR", imageUrl: nil, isSaudi: true,  countryCode: "SA", gameCode: "cs"),
+    OnboardingTeamItem(id: "g2",            name: "G2 Esports",    shortName: "G2",   imageUrl: nil, isSaudi: false, countryCode: "EU", gameCode: "lol"),
+    OnboardingTeamItem(id: "vitality",      name: "Team Vitality", shortName: "VIT",  imageUrl: nil, isSaudi: false, countryCode: "FR", gameCode: "cs"),
+    OnboardingTeamItem(id: "liquid",        name: "Team Liquid",   shortName: "TL",   imageUrl: nil, isSaudi: false, countryCode: "US", gameCode: "lol")
 ]
 
 // MARK: - OnboardingView
-
 struct OnboardingView: View {
     @AppStorage(AppStorageKeys.hasCompletedOnboarding) private var hasCompletedOnboarding = false
     @StateObject private var authService = UserAuthService.shared
-    @State private var currentStep = 0
-    @State private var selectedGames: Set<EsportsGame> = [.leagueOfLegends, .counterStrike, .valorant]
-    /// team.id (backend ID) — NOT team name
-    @State private var selectedTeamIDs: Set<String> = ["falcons"]
 
-    @State private var isRegisterMode = false
-    @State private var isLoading = false
-    @State private var errorMessage = ""
+    @State private var currentStep         = 0
+    @State private var selectedGames: Set<EsportsGame> = [.leagueOfLegends, .counterStrike, .valorant]
+    @State private var selectedTeamIDs: Set<String>    = ["falcons"]
+
+    @State private var isRegisterMode      = false
+    @State private var isLoading           = false
+    @State private var errorMessage: String? = nil
     @State private var showSocialLoginAlert = false
-    @State private var socialProviderName = ""
+    @State private var socialProviderName   = ""
+
+    // Login fields
+    @State private var loginEmail    = ""
+    @State private var loginPassword = ""
+    @State private var showPassword  = false
 
     private static let logger = Logger(subsystem: "com.esports360", category: "OnboardingView")
     private let stepsCount = 4
@@ -126,8 +130,11 @@ struct OnboardingView: View {
             Spacer()
             ZStack {
                 Circle()
-                    .stroke(LinearGradient(colors: [E360Color.gold.opacity(0.4), E360Color.primary.opacity(0.2)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
+                    .stroke(
+                        LinearGradient(colors: [E360Color.gold.opacity(0.4), E360Color.primary.opacity(0.2)],
+                            startPoint: .topLeading, endPoint: .bottomTrailing),
+                        lineWidth: 2
+                    )
                     .frame(width: 170, height: 170).modifier(PulseAnimation())
                 Circle()
                     .fill(RadialGradient(colors: [E360Color.primary.opacity(0.12), .clear],
@@ -141,10 +148,12 @@ struct OnboardingView: View {
                     .shadow(color: E360Color.gold.opacity(0.5), radius: 16)
             }
             .padding(.bottom, 8)
+
             VStack(spacing: 14) {
                 Text(E360Constants.arabicBrandName)
                     .font(E360Font.display(42, weight: .black))
-                    .foregroundStyle(LinearGradient(colors: [E360Color.textPrimary, E360Color.textPrimary.opacity(0.8)],
+                    .foregroundStyle(LinearGradient(
+                        colors: [E360Color.textPrimary, E360Color.textPrimary.opacity(0.8)],
                         startPoint: .top, endPoint: .bottom))
                     .shadow(color: E360Color.primary.opacity(0.3), radius: 8)
                 Text(E360Constants.arabicTagline)
@@ -160,10 +169,6 @@ struct OnboardingView: View {
     }
 
     // MARK: - Step 2: Login
-    @State private var loginEmail = ""
-    @State private var loginPassword = ""
-    @State private var showPassword = false
-
     private var loginStep: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -181,35 +186,36 @@ struct OnboardingView: View {
             .padding(.bottom, 4)
 
             VStack(spacing: 18) {
-                if !errorMessage.isEmpty {
-                    HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
-                        Text(errorMessage).font(E360Font.body(13, weight: .bold)).foregroundStyle(.red)
-                    }
-                    .padding(12).frame(maxWidth: .infinity, alignment: .trailing)
-                    .background(Color.red.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.red.opacity(0.3), lineWidth: 1))
-                    .transition(.opacity)
+                // ✔ E360StatusBanner replaces inline error HStack
+                if let errorMessage {
+                    E360StatusBanner(
+                        style: .error(errorMessage),
+                        onDismiss: { self.errorMessage = nil }
+                    )
+                    .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                // Email
+                // Email field
                 HStack(spacing: 12) {
-                    Image(systemName: "envelope.fill").font(.system(size: 16)).foregroundStyle(E360Color.accent).frame(width: 22)
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 16)).foregroundStyle(E360Color.accent).frame(width: 22)
                     TextField("", text: $loginEmail,
                         prompt: Text(String(localized: "onboarding.login.email.prompt", defaultValue: "البريد الإلكتروني"))
                             .foregroundStyle(E360Color.textTertiary))
                         .font(E360Font.body(15, weight: .medium)).foregroundStyle(E360Color.textPrimary)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.emailAddress)
-                        .multilineTextAlignment(.trailing)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .keyboardType(.emailAddress).multilineTextAlignment(.trailing)
                 }
-                .padding(16).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(
-                    LinearGradient(colors: [E360Color.accent.opacity(0.3), E360Color.primary.opacity(0.15)],
+                .padding(16)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(
+                    LinearGradient(colors: [E360Color.accent.opacity(0.30), E360Color.primary.opacity(0.15)],
                         startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
 
-                // Password
+                // Password field
                 HStack(spacing: 12) {
-                    Image(systemName: "lock.fill").font(.system(size: 16)).foregroundStyle(E360Color.primary).frame(width: 22)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 16)).foregroundStyle(E360Color.primary).frame(width: 22)
                     Group {
                         if showPassword {
                             TextField("", text: $loginPassword,
@@ -221,15 +227,17 @@ struct OnboardingView: View {
                                     .foregroundStyle(E360Color.textTertiary))
                         }
                     }
-                    .font(E360Font.body(15, weight: .medium)).foregroundStyle(E360Color.textPrimary).multilineTextAlignment(.trailing)
+                    .font(E360Font.body(15, weight: .medium)).foregroundStyle(E360Color.textPrimary)
+                    .multilineTextAlignment(.trailing)
                     Button { showPassword.toggle() } label: {
                         Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
                             .font(.system(size: 14)).foregroundStyle(E360Color.textTertiary)
                     }
                 }
-                .padding(16).background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(
-                    LinearGradient(colors: [E360Color.primary.opacity(0.3), E360Color.accent.opacity(0.15)],
+                .padding(16)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(
+                    LinearGradient(colors: [E360Color.primary.opacity(0.30), E360Color.accent.opacity(0.15)],
                         startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
 
                 // Auth button
@@ -244,17 +252,19 @@ struct OnboardingView: View {
                         }
                     }
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: [E360Color.primary, E360Color.accent],
-                        startPoint: .leading, endPoint: .trailing),
-                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .background(
+                        LinearGradient(colors: [E360Color.primary, E360Color.accent],
+                            startPoint: .leading, endPoint: .trailing),
+                        in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    )
                     .shadow(color: E360Color.primary.opacity(0.35), radius: 12, y: 4)
                 }
                 .disabled(isLoading)
 
-                // Toggle mode
+                // Toggle mode — clears error
                 Button {
                     HapticManager.shared.triggerSelection()
-                    withAnimation { isRegisterMode.toggle(); errorMessage = "" }
+                    withAnimation { isRegisterMode.toggle(); errorMessage = nil }
                 } label: {
                     Text(isRegisterMode
                         ? String(localized: "onboarding.login.toggle.toSignin",   defaultValue: "لديك حساب بالفعل؟ سجل دخولك")
@@ -273,22 +283,18 @@ struct OnboardingView: View {
 
                 HStack(spacing: 16) {
                     socialLoginButton(icon: "apple.logo", label: "Apple") {
-                        HapticManager.shared.triggerSelection(); socialProviderName = "Apple"; showSocialLoginAlert = true
+                        HapticManager.shared.triggerSelection()
+                        socialProviderName = "Apple"; showSocialLoginAlert = true
                     }
                     socialLoginButton(icon: "g.circle.fill", label: "Google") {
-                        HapticManager.shared.triggerSelection(); socialProviderName = "Google"; showSocialLoginAlert = true
+                        HapticManager.shared.triggerSelection()
+                        socialProviderName = "Google"; showSocialLoginAlert = true
                     }
                 }
             }
             .padding(24)
-            .background(ZStack {
-                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Color.white.opacity(0.03))
-            })
-            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(
-                LinearGradient(colors: [Color.white.opacity(0.12), Color.white.opacity(0.04), E360Color.accent.opacity(0.08)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1))
-            .shadow(color: E360Color.primary.opacity(0.08), radius: 30, y: 10)
+            .e360GlassCard(cornerRadius: 24, borderOpacity: 0.10, shadowRadius: 24,
+                           tintColor: E360Color.primary)
             .padding(.horizontal, 24)
 
             Button { advanceFromLogin() } label: {
@@ -299,10 +305,11 @@ struct OnboardingView: View {
             .padding(.top, 4)
             Spacer()
         }
+        .animation(.easeOut(duration: 0.22), value: errorMessage)
     }
 
     private func handleAuthAction() {
-        guard !loginEmail.isEmpty && loginEmail.contains("@") else {
+        guard !loginEmail.isEmpty, loginEmail.contains("@") else {
             errorMessage = String(localized: "onboarding.login.error.invalidEmail",
                 defaultValue: "يرجى إدخال بريد إلكتروني صالح")
             return
@@ -312,7 +319,7 @@ struct OnboardingView: View {
                 defaultValue: "يجب أن تكون كلمة المرور ٦ خانات على الأقل")
             return
         }
-        isLoading = true; errorMessage = ""
+        isLoading = true; errorMessage = nil
         HapticManager.shared.triggerSelection()
         Task {
             do {
@@ -321,8 +328,8 @@ struct OnboardingView: View {
                 await MainActor.run { isLoading = false; advanceFromLogin() }
             } catch {
                 await MainActor.run {
-                    isLoading = false
-                    errorMessage = error.localizedDescription
+                    isLoading      = false
+                    errorMessage   = error.localizedDescription
                     HapticManager.shared.triggerNotification(type: .error)
                 }
             }
@@ -336,8 +343,8 @@ struct OnboardingView: View {
                 Text(label).font(E360Font.body(14, weight: .bold))
             }
             .foregroundStyle(E360Color.textPrimary).frame(maxWidth: .infinity).padding(.vertical, 14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(E360Color.divider, lineWidth: 1))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(E360Color.divider, lineWidth: 1))
         }
     }
 
@@ -360,7 +367,10 @@ struct OnboardingView: View {
 
             ScrollView(.vertical, showsIndicators: false) {
                 let games = EsportsGame.allCases.filter { $0 != .unknown }
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                LazyVGrid(
+                    columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)],
+                    spacing: 14
+                ) {
                     ForEach(games) { game in
                         let isSelected = selectedGames.contains(game)
                         Button {
@@ -372,22 +382,28 @@ struct OnboardingView: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 HStack {
                                     GameIconView(game: game, size: 34)
-                                    Text(game.shortName).font(E360Font.mono(11, weight: .black))
+                                    Text(game.shortName)
+                                        .font(E360Font.mono(11, weight: .black))
                                         .foregroundStyle(isSelected ? .white : game.themeColor)
                                         .padding(.horizontal, 8).padding(.vertical, 4)
                                         .background(isSelected ? game.themeColor : game.themeColor.opacity(0.12), in: Capsule())
                                     Spacer()
                                     if isSelected {
-                                        Image(systemName: "checkmark.circle.fill").foregroundStyle(game.themeColor).font(.system(size: 20))
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(game.themeColor).font(.system(size: 20))
                                     }
                                 }
-                                Text(game.displayName).font(E360Font.body(14, weight: .black))
+                                Text(game.displayName)
+                                    .font(E360Font.body(14, weight: .black))
                                     .foregroundStyle(E360Color.textPrimary).lineLimit(1)
                             }
                             .padding(14).frame(height: 98, alignment: .leading)
                             .background(ZStack {
                                 RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.ultraThinMaterial)
-                                if isSelected { RoundedRectangle(cornerRadius: 18, style: .continuous).fill(game.themeColor.opacity(0.08)) }
+                                if isSelected {
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .fill(game.themeColor.opacity(0.08))
+                                }
                             })
                             .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
                                 .stroke(isSelected ? game.themeColor.opacity(0.50) : E360Color.divider, lineWidth: 1.5))
@@ -427,7 +443,6 @@ struct OnboardingView: View {
                             }
                         } label: {
                             HStack(spacing: 14) {
-                                // Logo placeholder
                                 ZStack {
                                     Circle().fill(themeColor.opacity(0.12)).frame(width: 50, height: 50)
                                         .overlay(Circle().stroke(isSelected ? themeColor.opacity(0.55) : E360Color.divider, lineWidth: 1.5))
@@ -436,11 +451,13 @@ struct OnboardingView: View {
                                 }
                                 VStack(alignment: .leading, spacing: 4) {
                                     HStack {
-                                        Text(team.name).font(E360Font.body(15, weight: .bold)).foregroundStyle(E360Color.textPrimary)
+                                        Text(team.name)
+                                            .font(E360Font.body(15, weight: .bold)).foregroundStyle(E360Color.textPrimary)
                                         if team.isSaudi { Text("🇸🇦").font(.system(size: 14)) }
                                     }
                                     if let short = team.shortName {
-                                        Text(short).font(E360Font.mono(11, weight: .semibold)).foregroundStyle(E360Color.textSecondary)
+                                        Text(short)
+                                            .font(E360Font.mono(11, weight: .semibold)).foregroundStyle(E360Color.textSecondary)
                                     }
                                 }
                                 Spacer()
@@ -491,7 +508,8 @@ struct OnboardingView: View {
                     : String(localized: "onboarding.cta.next",   defaultValue: "التالي"))
                     .font(E360Font.display(16, weight: .black)).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .background(LinearGradient(colors: buttonGradients, startPoint: .leading, endPoint: .trailing), in: Capsule())
+                    .background(LinearGradient(colors: buttonGradients, startPoint: .leading, endPoint: .trailing),
+                                in: Capsule())
                     .shadow(color: buttonGradients.first!.opacity(0.40), radius: 14, y: 5)
             }
             .padding(.horizontal, 24).padding(.bottom, 24)
@@ -517,14 +535,10 @@ struct OnboardingView: View {
             Task {
                 await withTaskGroup(of: Void.self) { group in
                     for game in selectedGames {
-                        group.addTask {
-                            await UserAuthService.shared.follow(entityType: "game", entityId: game.rawValue)
-                        }
+                        group.addTask { await UserAuthService.shared.follow(entityType: "game", entityId: game.rawValue) }
                     }
                     for teamID in selectedTeamIDs {
-                        group.addTask {
-                            await UserAuthService.shared.follow(entityType: "team", entityId: teamID)
-                        }
+                        group.addTask { await UserAuthService.shared.follow(entityType: "team", entityId: teamID) }
                     }
                 }
                 Self.logger.info("onboarding follows synced — games:\(self.selectedGames.count) teams:\(self.selectedTeamIDs.count)")
@@ -535,14 +549,8 @@ struct OnboardingView: View {
     }
 
     private func saveUserPreferences() {
-        UserDefaults.standard.set(
-            selectedGames.map { $0.rawValue },
-            forKey: AppStorageKeys.favoriteGames
-        )
-        UserDefaults.standard.set(
-            Array(selectedTeamIDs),
-            forKey: AppStorageKeys.followedTeams
-        )
+        UserDefaults.standard.set(selectedGames.map { $0.rawValue }, forKey: AppStorageKeys.favoriteGames)
+        UserDefaults.standard.set(Array(selectedTeamIDs), forKey: AppStorageKeys.followedTeams)
         Self.logger.debug("prefs saved — games:\(self.selectedGames.count) teams:\(self.selectedTeamIDs.count)")
     }
 }
@@ -558,8 +566,8 @@ private struct OnboardingParticlesView: View {
                     .fill(particle.color.opacity(animationTrigger ? particle.opacity : particle.opacity * 0.3))
                     .frame(width: particle.size, height: particle.size).blur(radius: particle.blur)
                     .position(
-                        x: animationTrigger ? particle.endX * geo.size.width   : particle.startX * geo.size.width,
-                        y: animationTrigger ? particle.endY * geo.size.height  : particle.startY * geo.size.height
+                        x: animationTrigger ? particle.endX * geo.size.width  : particle.startX * geo.size.width,
+                        y: animationTrigger ? particle.endY * geo.size.height : particle.startY * geo.size.height
                     )
             }
         }
@@ -575,10 +583,13 @@ private struct Particle: Identifiable {
     let opacity, blur: Double
     let color: Color
     init() {
-        startX = .random(in: 0.05...0.95); startY = .random(in: 0.05...0.95)
-        endX = startX + .random(in: -0.15...0.15); endY = startY + .random(in: -0.15...0.15)
-        size = .random(in: 2...6); opacity = .random(in: 0.15...0.45); blur = .random(in: 0.5...2.0)
-        color = [E360Color.accent, E360Color.primary, E360Color.gold, Color.white].randomElement()!
+        startX  = .random(in: 0.05...0.95); startY  = .random(in: 0.05...0.95)
+        endX    = startX + .random(in: -0.15...0.15)
+        endY    = startY + .random(in: -0.15...0.15)
+        size    = .random(in: 2...6)
+        opacity = .random(in: 0.15...0.45)
+        blur    = .random(in: 0.5...2.0)
+        color   = [E360Color.accent, E360Color.primary, E360Color.gold, Color.white].randomElement()!
     }
 }
 
@@ -587,7 +598,8 @@ private struct PulseAnimation: ViewModifier {
     @State private var isPulsing = false
     func body(content: Content) -> some View {
         content
-            .scaleEffect(isPulsing ? 1.08 : 0.95).opacity(isPulsing ? 0.6 : 0.2)
+            .scaleEffect(isPulsing ? 1.08 : 0.95)
+            .opacity(isPulsing ? 0.6 : 0.2)
             .onAppear {
                 withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) { isPulsing = true }
             }
@@ -605,7 +617,8 @@ struct GameIconView: View {
                 .shadow(color: game.themeColor.opacity(0.3), radius: 6)
             Image(systemName: systemImageName)
                 .font(.system(size: size * 0.48, weight: .bold))
-                .foregroundStyle(LinearGradient(colors: [game.themeColor, game.themeColor.opacity(0.7)],
+                .foregroundStyle(LinearGradient(
+                    colors: [game.themeColor, game.themeColor.opacity(0.7)],
                     startPoint: .topLeading, endPoint: .bottomTrailing))
         }
     }
